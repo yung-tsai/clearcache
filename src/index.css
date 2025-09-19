@@ -2,41 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Classic Mac OS Design System - Monochrome aesthetic */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Classic Mac Colors - Monochrome */
+    --mac-white: 0 0% 100%;
+    --mac-black: 0 0% 0%;
+    --mac-gray-light: 0 0% 87%;
+    --mac-gray-medium: 0 0% 75%;
+    --mac-gray-dark: 0 0% 33%;
+    
+    /* Window System */
+    --mac-window-bg: 0 0% 100%;
+    --mac-window-border: 0 0% 0%;
+    --mac-title-bar: 0 0% 87%;
+    --mac-title-text: 0 0% 0%;
+    
+    /* Desktop */
+    --mac-desktop: 0 0% 87%;
+    
+    /* Text */
+    --mac-text: 0 0% 0%;
+    --mac-text-disabled: 0 0% 50%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    /* Design system mapping */
+    --background: var(--mac-desktop);
+    --foreground: var(--mac-text);
+    --card: var(--mac-window-bg);
+    --card-foreground: var(--mac-text);
+    --popover: var(--mac-window-bg);
+    --popover-foreground: var(--mac-text);
+    --primary: var(--mac-black);
+    --primary-foreground: var(--mac-white);
+    --secondary: var(--mac-gray-light);
+    --secondary-foreground: var(--mac-text);
+    --muted: var(--mac-gray-medium);
+    --muted-foreground: var(--mac-text-disabled);
+    --accent: var(--mac-gray-light);
+    --accent-foreground: var(--mac-text);
+    --destructive: var(--mac-black);
+    --destructive-foreground: var(--mac-white);
+    --border: var(--mac-black);
+    --input: var(--mac-white);
+    --ring: var(--mac-black);
+    --radius: 0rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +110,47 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
+    background-image: 
+      radial-gradient(circle at 1px 1px, hsl(var(--mac-black)) 1px, transparent 0);
+    background-size: 2px 2px;
+    min-height: 100vh;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  }
+
+  /* Classic Mac Window Styles */
+  .mac-window {
+    @apply bg-white border-2 border-black;
+    box-shadow: 2px 2px 0px hsl(var(--mac-black));
+  }
+
+  .mac-title-bar {
+    @apply bg-gray-200 border-b border-black px-2 py-1;
+    background: linear-gradient(to bottom, 
+      hsl(var(--mac-gray-light)) 0%, 
+      hsl(var(--mac-gray-medium)) 100%);
+  }
+
+  .mac-menu-bar {
+    @apply bg-gray-200 border-b border-black px-2 py-1;
+    background: hsl(var(--mac-gray-light));
+  }
+
+  .mac-content {
+    @apply bg-white p-0;
+  }
+
+  /* Classic Mac Button Styles */
+  .mac-button {
+    @apply border-2 border-black bg-white px-3 py-1 text-sm font-mono;
+    box-shadow: 1px 1px 0px hsl(var(--mac-black));
+  }
+
+  .mac-button:hover {
+    @apply bg-gray-100;
+  }
+
+  .mac-button:active {
+    box-shadow: inset 1px 1px 2px hsl(var(--mac-black));
   }
 }
