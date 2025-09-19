@@ -10,8 +10,20 @@ const MacWindow = ({ title, children, className = "" }: MacWindowProps) => {
   return (
     <div className={`mac-window ${className}`}>
       {/* Title Bar */}
-      <div className="mac-title-bar flex items-center justify-center relative">
-        <div className="text-sm font-mono font-bold text-black">{title}</div>
+      <div className="mac-title-bar">
+        {/* Close Button */}
+        <div className="mac-close-button"></div>
+        
+        {/* Left Stripes */}
+        <div className="mac-title-bar-stripes-left"></div>
+        
+        {/* Center Title */}
+        <div className="mac-title-bar-center">
+          {title}
+        </div>
+        
+        {/* Right Stripes */}
+        <div className="mac-title-bar-stripes-right"></div>
       </div>
       
       {/* Content Area */}

@@ -125,10 +125,49 @@
   }
 
   .mac-title-bar {
-    @apply bg-gray-200 border-b border-black px-2 py-1;
-    background: linear-gradient(to bottom, 
-      hsl(var(--mac-gray-light)) 0%, 
-      hsl(var(--mac-gray-medium)) 100%);
+    @apply bg-white border-b border-black relative;
+    height: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .mac-title-bar-stripes-left,
+  .mac-title-bar-stripes-right {
+    width: 20%;
+    height: 100%;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      hsl(var(--mac-black)) 1px,
+      hsl(var(--mac-black)) 2px
+    );
+    background-size: 100% 3px;
+  }
+
+  .mac-title-bar-center {
+    flex: 1;
+    background: white;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .mac-close-button {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 1px solid black;
+    cursor: pointer;
   }
 
   .mac-menu-bar {
