@@ -27,16 +27,34 @@ export function MacWindow({
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [previousState, setPreviousState] = useState({ x: initialX, y: initialY, width: initialWidth, height: initialHeight });
 
   const windowRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget || (e.target as Element).classList.contains('window-titlebar')) {
+    // Only allow dragging when not maximized and when clicking on title bar areas
+    if (!isMaximized && (e.target === e.currentTarget || (e.target as Element).classList.contains('window-titlebar') || (e.target as Element).classList.contains('title-bar-draggable'))) {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - position.x,
         y: e.clientY - position.y
       });
+    }
+  };
+
+  const handleMaximize = () => {
+    if (isMaximized) {
+      // Restore to previous state
+      setPosition({ x: previousState.x, y: previousState.y });
+      setSize({ width: previousState.width, height: previousState.height });
+      setIsMaximized(false);
+    } else {
+      // Save current state and maximize
+      setPreviousState({ x: position.x, y: position.y, width: size.width, height: size.height });
+      setPosition({ x: 0, y: 24 });
+      setSize({ width: window.innerWidth, height: window.innerHeight - 24 });
+      setIsMaximized(true);
     }
   };
 
@@ -96,9 +114,9 @@ export function MacWindow({
         top: position.y,
         width: size.width,
         height: size.height,
-        minWidth: 300,
-        minHeight: 200,
-        borderRadius: '11px',
+        minWidth: isMaximized ? size.width : 300,
+        minHeight: isMaximized ? size.height : 200,
+        borderRadius: '0px',
         background: '#FFFFFF',
         border: '1px solid #000000',
         boxShadow: '1px 1px 0px 1px #000000',
@@ -107,7 +125,7 @@ export function MacWindow({
     >
       {/* Title Bar */}
       <div
-        className="window-titlebar cursor-move relative"
+        className="window-titlebar title-bar-draggable cursor-move relative"
         onMouseDown={handleMouseDown}
         style={{
           width: '100%',
@@ -115,17 +133,20 @@ export function MacWindow({
           background: '#FFFFFF',
           border: '1px solid #000000',
           borderRadius: '0px',
-          position: 'relative'
+          position: 'relative',
+          cursor: isMaximized ? 'default' : 'move'
         }}
       >
         {/* Horizontal Bars */}
         <div 
+          className="title-bar-draggable"
           style={{
             position: 'absolute',
             left: '4px',
             right: '4px',
             top: '6px',
-            height: '16px'
+            height: '16px',
+            pointerEvents: 'none'
           }}
         >
           {/* Individual bars at specific positions */}
@@ -155,8 +176,10 @@ export function MacWindow({
           />
         )}
 
-        {/* Expand Button */}
-        <div
+        {/* Expand/Maximize Button */}
+        <button
+          onClick={handleMaximize}
+          title={isMaximized ? "Restore" : "Maximize"}
           style={{
             position: 'absolute',
             width: '16px',
@@ -164,7 +187,8 @@ export function MacWindow({
             right: '13px',
             top: '6px',
             background: '#FFFFFF',
-            border: '1px solid #000000'
+            border: '1px solid #000000',
+            cursor: 'pointer'
           }}
         >
           <div
@@ -177,10 +201,11 @@ export function MacWindow({
               border: '1px solid #000000'
             }}
           />
-        </div>
+        </button>
         
         {/* Title */}
         <div 
+          className="title-bar-draggable"
           style={{
             position: 'absolute',
             width: '246px',
@@ -232,17 +257,19 @@ export function MacWindow({
       </div>
 
       {/* Resize Handle */}
-      <div
-        className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
-        onMouseDown={handleResizeMouseDown}
-        style={{
-          background: `
-            linear-gradient(135deg, transparent 0%, transparent 30%, #666 30%, #666 35%, transparent 35%, transparent 65%, #666 65%, #666 70%, transparent 70%),
-            linear-gradient(45deg, transparent 0%, transparent 30%, #666 30%, #666 35%, transparent 35%, transparent 65%, #666 65%, #666 70%, transparent 70%)
-          `,
-          backgroundSize: '4px 4px'
-        }}
-      />
+      {!isMaximized && (
+        <div
+          className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
+          onMouseDown={handleResizeMouseDown}
+          style={{
+            background: `
+              linear-gradient(135deg, transparent 0%, transparent 30%, #666 30%, #666 35%, transparent 35%, transparent 65%, #666 65%, #666 70%, transparent 70%),
+              linear-gradient(45deg, transparent 0%, transparent 30%, #666 30%, #666 35%, transparent 35%, transparent 65%, #666 65%, #666 70%, transparent 70%)
+            `,
+            backgroundSize: '4px 4px'
+          }}
+        />
+      )}
     </div>
   );
 }
