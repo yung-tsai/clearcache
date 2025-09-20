@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { MacWindow } from '@/components/MacWindow';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -50,8 +49,9 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
-      <MacWindow title="Clear Cache - Login" className="w-96">
-        <form onSubmit={handleLogin} className="p-6 space-y-4">
+      <div className="w-96 bg-white border border-black shadow-lg p-6">
+        <h1 className="text-lg font-mono font-bold mb-4 text-center">Clear Cache - Login</h1>
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-mono font-bold mb-2">
               Email Address
@@ -79,7 +79,7 @@ export default function LoginForm() {
             A magic link will be sent to your email
           </div>
         </form>
-      </MacWindow>
+      </div>
     </div>
   );
 }

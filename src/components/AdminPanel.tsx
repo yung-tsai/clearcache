@@ -5,7 +5,6 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { FeatureFlag, Profile } from '@/lib/database.types';
-import { MacWindow } from '@/components/MacWindow';
 
 export default function AdminPanel() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);
@@ -101,7 +100,12 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Feature Flags */}
-        <MacWindow title="Feature Flags">
+        <div className="bg-white border border-black shadow-lg">
+          <div className="h-5 bg-gradient-to-b from-gray-100 to-gray-200 border-b border-black/20 flex items-center px-2">
+            <div className="flex-1 text-center text-xs font-medium text-black">
+              Feature Flags
+            </div>
+          </div>
           <div className="p-6">
             <div className="space-y-4">
               {featureFlags.map((flag) => (
@@ -120,10 +124,15 @@ export default function AdminPanel() {
               ))}
             </div>
           </div>
-        </MacWindow>
+        </div>
 
         {/* User Management */}
-        <MacWindow title="User Management">
+        <div className="bg-white border border-black shadow-lg">
+          <div className="h-5 bg-gradient-to-b from-gray-100 to-gray-200 border-b border-black/20 flex items-center px-2">
+            <div className="flex-1 text-center text-xs font-medium text-black">
+              User Management
+            </div>
+          </div>
           <div className="p-6">
             <div className="mb-4">
               <Input
@@ -161,7 +170,7 @@ export default function AdminPanel() {
               </div>
             )}
           </div>
-        </MacWindow>
+        </div>
       </div>
     </div>
   );
