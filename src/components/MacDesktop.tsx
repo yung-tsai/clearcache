@@ -92,7 +92,7 @@ export function MacDesktop() {
       case 'small-dots':
       default:
         return { 
-          backgroundImage: 'url("/src/assets/swatch-pattern.png")',
+          backgroundImage: 'url("/src/assets/swatch-small-dots.png")',
           backgroundRepeat: 'repeat'
         };
     }
