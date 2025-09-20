@@ -1,73 +1,170 @@
-# Welcome to your Lovable project
+# Clear Cache - Retro Mac Journal App
 
-## Project info
+A classic Mac OS-style journaling web application built with React, TypeScript, and Supabase.
 
-**URL**: https://lovable.dev/projects/4b94dbde-54ae-4fa6-933d-53bd150da033
+## Features
 
-## How can I edit this code?
+- **Retro Mac Aesthetics**: Classic Mac OS-inspired UI with window chrome, monospace fonts, and pixel-perfect styling
+- **Secure Authentication**: Magic link authentication via Supabase
+- **Journal Management**: Create, edit, delete, and search journal entries
+- **Voice-to-Text**: Browser-based speech recognition for hands-free writing
+- **Admin Dashboard**: Feature flag management and user administration
+- **Responsive Design**: Works on desktop and mobile devices
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
+- **Backend**: Supabase (Auth, Database, RLS)
+- **UI Components**: Shadcn/ui components with custom Mac styling
+- **Voice Recognition**: Web Speech API
+- **Deployment**: Ready for Vercel deployment
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4b94dbde-54ae-4fa6-933d-53bd150da033) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ and npm
+- A Supabase account and project
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Setup Instructions
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. **Clone the repository**
+   ```bash
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_NAME>
+   ```
 
-Follow these steps:
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. **Set up Supabase**
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Go to Settings > API to get your project URL and anon key
+   - Copy `.env.example` to `.env.local` and fill in your Supabase credentials
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. **Configure the database**
+   - Open the Supabase SQL Editor
+   - Run the SQL schema from `supabase-schema.sql`
+   - This will create all necessary tables, RLS policies, and triggers
 
-# Step 3: Install the necessary dependencies.
-npm i
+5. **Set up authentication**
+   - In Supabase Dashboard, go to Authentication > Settings
+   - Configure your site URL for magic link redirects
+   - Optionally set up email templates
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+6. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+7. **Create an admin user**
+   - Sign up through the app with your email
+   - In Supabase SQL Editor, run:
+     ```sql
+     UPDATE profiles SET role = 'admin' WHERE user_id = 'your-user-id';
+     ```
+   - Find your user ID in the Supabase Auth dashboard
+
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and configure:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_APP_URL=http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/          # React components
+│   ├── ui/             # Shadcn UI components
+│   ├── AuthGuard.tsx   # Route protection
+│   ├── LoginForm.tsx   # Authentication
+│   ├── JournalEditor.tsx
+│   ├── JournalFolder.tsx
+│   ├── AdminPanel.tsx
+│   └── MacWindow.tsx   # Mac-style window chrome
+├── hooks/
+│   ├── useAuth.tsx     # Authentication hook
+│   └── useSpeech.tsx   # Voice recognition hook
+├── lib/
+│   ├── supabase.ts     # Supabase client
+│   ├── database.types.ts
+│   └── utils.ts
+├── pages/              # Route components
+└── index.css          # Global styles and design system
+```
 
-**Use GitHub Codespaces**
+## Features
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Authentication
+- Magic link authentication (no passwords required)
+- Automatic profile creation on first login
+- Role-based access control (user/admin)
 
-## What technologies are used for this project?
+### Journal Entries
+- Rich text editing with title and content
+- Voice-to-text input using browser Speech API
+- Full-text search across all entries
+- Sort by newest/oldest
+- Auto-save drafts (planned for Iteration 2)
 
-This project is built with:
+### Admin Features
+- Feature flag management (voice_to_text, sounds, ai_reflection)
+- User management and role assignment
+- Global configuration
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Mac-Style UI
+- Classic window chrome with title bars and close buttons
+- Monospace fonts (Monaco/Menlo/Courier)
+- Pixel-perfect borders and shadows
+- Authentic Mac OS design language
 
-## How can I deploy this project?
+## Deployment
 
-Simply open [Lovable](https://lovable.dev/projects/4b94dbde-54ae-4fa6-933d-53bd150da033) and click on Share -> Publish.
+### Vercel (Recommended)
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Set environment variables in Vercel dashboard
+4. Deploy!
 
-## Can I connect a custom domain to my Lovable project?
+### Other Platforms
+The app is a standard Vite React application and can be deployed to any static hosting platform.
 
-Yes, you can!
+## Browser Compatibility
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Voice Recognition**: Chrome, Edge, Safari (latest versions)
+- **General App**: All modern browsers with ES2020+ support
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Iteration 2 Roadmap
+
+- [ ] Stripe integration for subscriptions
+- [ ] AI reflection features
+- [ ] Enhanced Mac theming (Chicago font, system sounds)
+- [ ] Client-side encryption
+- [ ] Advanced admin features
+- [ ] Mobile app (React Native)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## Support
+
+For issues and questions:
+1. Check the GitHub issues
+2. Review Supabase documentation
+3. Create a new issue with detailed description
+
+## License
+
+MIT License - see LICENSE file for details
