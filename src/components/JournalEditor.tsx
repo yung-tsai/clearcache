@@ -13,9 +13,10 @@ import { Mic, MicOff, Save, Trash2 } from 'lucide-react';
 
 interface JournalEditorProps {
   entryId?: string;
+  onDelete?: () => void;
 }
 
-export default function JournalEditor({ entryId }: JournalEditorProps) {
+export default function JournalEditor({ entryId, onDelete }: JournalEditorProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
@@ -135,7 +136,7 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
         description: 'Your journal entry has been deleted.',
       });
 
-      navigate('/app/folder');
+      onDelete?.();
     } catch (error) {
       console.error('Delete error:', error);
       toast({

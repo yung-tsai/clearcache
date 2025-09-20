@@ -51,6 +51,17 @@ export function MacDesktop() {
     setWindows(prev => prev.filter(w => w.id !== windowId));
   };
 
+  const handleEntryDeleted = (windowId: string) => {
+    // Close the editor window
+    handleCloseWindow(windowId);
+    // Trigger a refresh of any journal folder windows by updating their key
+    setWindows(prev => prev.map(w => 
+      w.content === 'journal-folder' 
+        ? { ...w, id: w.id + '-refreshed-' + Date.now() }
+        : w
+    ));
+  };
+
   const renderWindowContent = (window: OpenWindow) => {
     switch (window.content) {
       case 'new-entry':
@@ -58,7 +69,7 @@ export function MacDesktop() {
       case 'journal-folder':
         return <JournalFolder onOpenEntry={handleOpenEntry} />;
       case 'edit-entry':
-        return <JournalEditor entryId={window.entryId} />;
+        return <JournalEditor entryId={window.entryId} onDelete={() => handleEntryDeleted(window.id)} />;
       default:
         return null;
     }
