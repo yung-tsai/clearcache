@@ -1,13 +1,29 @@
 import { useState } from 'react';
+import { BackgroundType } from './MacDesktop';
+
+interface MenuSubItem {
+  label: string;
+  action: string;
+}
+
+interface MenuItem {
+  label: string;
+  action?: string;
+  shortcut?: string;
+  disabled?: boolean;
+  submenu?: MenuSubItem[];
+}
 
 interface MacMenuBarProps {
   onMenuAction: (action: string) => void;
+  currentBackground: BackgroundType;
 }
 
-export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
+export function MacMenuBar({ onMenuAction, currentBackground }: MacMenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
 
-  const menuItems = [
+  const menuItems: Array<{ label: string; items: MenuItem[] }> = [
     {
       label: 'File',
       items: [
@@ -35,6 +51,15 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
         { label: 'Journal Folder', action: 'journal-folder', shortcut: '⌘1' },
         { label: 'Refresh', action: 'refresh', shortcut: '⌘R', disabled: true },
         { label: '---' },
+        { 
+          label: 'Background', 
+          submenu: [
+            { label: 'Black', action: 'background-black' },
+            { label: 'Small Dots', action: 'background-small-dots' },
+            { label: 'Big Dots', action: 'background-big-dots' },
+          ]
+        },
+        { label: '---' },
         { label: 'Zoom In', action: 'zoom-in', shortcut: '⌘+', disabled: true },
         { label: 'Zoom Out', action: 'zoom-out', shortcut: '⌘-', disabled: true },
       ]
@@ -52,6 +77,7 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
 
   const handleMenuClick = (label: string) => {
     setActiveMenu(activeMenu === label ? null : label);
+    setActiveSubmenu(null);
   };
 
   const handleMenuItemClick = (action: string, disabled?: boolean) => {
@@ -59,10 +85,25 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
       onMenuAction(action);
     }
     setActiveMenu(null);
+    setActiveSubmenu(null);
+  };
+
+  const handleSubmenuEnter = (label: string) => {
+    setActiveSubmenu(label);
+  };
+
+  const handleSubmenuLeave = () => {
+    setActiveSubmenu(null);
   };
 
   const handleOutsideClick = () => {
     setActiveMenu(null);
+    setActiveSubmenu(null);
+  };
+
+  const getBackgroundLabel = (action: string) => {
+    const type = action.replace('background-', '');
+    return type === currentBackground;
   };
 
   return (
@@ -93,6 +134,33 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
                 {menu.items.map((item, index) => (
                   item.label === '---' ? (
                     <div key={index} className="h-px bg-black/10 my-1 mx-2" />
+                  ) : item.submenu ? (
+                    <div
+                      key={item.label}
+                      className="relative"
+                      onMouseEnter={() => handleSubmenuEnter(item.label)}
+                      onMouseLeave={handleSubmenuLeave}
+                    >
+                      <div className="w-full text-left px-4 py-1 hover:bg-blue-500 hover:text-white transition-colors flex justify-between items-center cursor-pointer">
+                        <span>{item.label}</span>
+                        <span className="text-xs">▶</span>
+                      </div>
+                      {activeSubmenu === item.label && (
+                        <div className="absolute top-0 left-full ml-0 bg-white border border-black/20 shadow-lg min-w-32 z-40">
+                          {item.submenu.map((subItem) => (
+                            <button
+                              key={subItem.label}
+                              className={`w-full text-left px-4 py-1 hover:bg-blue-500 hover:text-white transition-colors ${
+                                getBackgroundLabel(subItem.action) ? 'text-black' : 'text-gray-400'
+                              }`}
+                              onClick={() => handleMenuItemClick(subItem.action)}
+                            >
+                              {subItem.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <button
                       key={item.label}
