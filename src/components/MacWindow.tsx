@@ -102,40 +102,32 @@ export function MacWindow({
     >
       {/* Title Bar */}
       <div
-        className="window-titlebar h-6 bg-white border-b border-black flex items-center px-2 cursor-move relative overflow-hidden"
+        className="window-titlebar h-7 bg-white border-b border-black cursor-move relative overflow-hidden"
         onMouseDown={handleMouseDown}
-        style={{
-          background: `
-            white,
-            repeating-linear-gradient(
-              0deg,
-              transparent 0px,
-              transparent 1px,
-              #000 1px,
-              #000 2px,
-              transparent 2px,
-              transparent 4px
-            )
-          `,
-          backgroundSize: '100% 4px'
-        }}
       >
+        {/* Horizontal Bars */}
+        <div className="absolute left-1 right-1 top-1.5 h-px bg-black"></div>
+        <div className="absolute left-1 right-1 top-2.5 h-px bg-black"></div>
+        <div className="absolute left-1 right-1 top-3 h-px bg-black"></div>
+        <div className="absolute left-1 right-1 top-3.5 h-px bg-black"></div>
+        <div className="absolute left-1 right-1 top-4.5 h-px bg-black"></div>
+        <div className="absolute left-1 right-1 top-5 h-px bg-black"></div>
+
         {/* Close Button */}
         {onClose && (
           <button
-            className="w-3 h-3 bg-white border border-black/40 hover:bg-gray-100 transition-colors flex-shrink-0"
+            className="absolute left-3.5 top-1.5 w-4 h-4 bg-white border border-black hover:bg-gray-100 transition-colors"
             onClick={onClose}
             title="Close"
           />
         )}
         
         {/* Title */}
-        <div className="flex-1 text-center text-xs font-medium text-black pointer-events-none">
-          {title}
+        <div className="absolute left-1/2 top-0 transform -translate-x-1/2 h-full flex items-center bg-white px-2">
+          <div className="text-sm font-medium text-black pointer-events-none">
+            {title}
+          </div>
         </div>
-        
-        {/* Spacer for balance */}
-        <div className="w-3 flex-shrink-0" />
       </div>
 
       {/* Content Area */}
