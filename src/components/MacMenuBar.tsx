@@ -75,7 +75,7 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
         />
       )}
       
-      <div className="fixed top-0 left-0 right-0 h-6 bg-mac-menubar border-b border-black/20 flex items-center px-4 text-sm font-medium z-20">
+      <div className="fixed top-0 left-0 right-0 h-6 bg-white border-b border-black/20 flex items-center px-4 text-sm font-medium z-20">
         {menuItems.map((menu) => (
           <div key={menu.label} className="relative">
             <button

@@ -4,47 +4,61 @@ import { MacWindow } from './MacWindow';
 import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry';
+
+interface OpenWindow {
+  id: string;
+  content: WindowContent;
+  title: string;
+  entryId?: string;
+}
 
 export function MacDesktop() {
-  const [windowContent, setWindowContent] = useState<WindowContent>('none');
-  const [isWindowVisible, setIsWindowVisible] = useState(false);
+  const [windows, setWindows] = useState<OpenWindow[]>([]);
 
   const handleMenuAction = (action: string) => {
+    const windowId = Date.now().toString();
+    
     switch (action) {
       case 'new-entry':
-        setWindowContent('new-entry');
-        setIsWindowVisible(true);
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'new-entry',
+          title: 'New Entry'
+        }]);
         break;
       case 'journal-folder':
-        setWindowContent('journal-folder');
-        setIsWindowVisible(true);
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'journal-folder',
+          title: 'Journal Folder'
+        }]);
         break;
     }
   };
 
-  const handleCloseWindow = () => {
-    setIsWindowVisible(false);
-    setWindowContent('none');
+  const handleOpenEntry = (entryId: string, title: string) => {
+    const windowId = Date.now().toString();
+    setWindows(prev => [...prev, {
+      id: windowId,
+      content: 'edit-entry',
+      title: title || 'Edit Entry',
+      entryId
+    }]);
   };
 
-  const getWindowTitle = () => {
-    switch (windowContent) {
-      case 'new-entry':
-        return 'New Entry';
-      case 'journal-folder':
-        return 'Journal Folder';
-      default:
-        return 'Window';
-    }
+  const handleCloseWindow = (windowId: string) => {
+    setWindows(prev => prev.filter(w => w.id !== windowId));
   };
 
-  const renderWindowContent = () => {
-    switch (windowContent) {
+  const renderWindowContent = (window: OpenWindow) => {
+    switch (window.content) {
       case 'new-entry':
         return <JournalEditor />;
       case 'journal-folder':
-        return <JournalFolder />;
+        return <JournalFolder onOpenEntry={handleOpenEntry} />;
+      case 'edit-entry':
+        return <JournalEditor entryId={window.entryId} />;
       default:
         return null;
     }
@@ -58,18 +72,19 @@ export function MacDesktop() {
       <MacMenuBar onMenuAction={handleMenuAction} />
       
       <div className="relative h-full pt-6">
-        {isWindowVisible && (
+        {windows.map((window, index) => (
           <MacWindow
-            title={getWindowTitle()}
-            onClose={handleCloseWindow}
-            initialX={100}
-            initialY={100}
+            key={window.id}
+            title={window.title}
+            onClose={() => handleCloseWindow(window.id)}
+            initialX={100 + (index * 30)}
+            initialY={100 + (index * 30)}
             initialWidth={800}
             initialHeight={600}
           >
-            {renderWindowContent()}
+            {renderWindowContent(window)}
           </MacWindow>
-        )}
+        ))}
       </div>
     </div>
   );

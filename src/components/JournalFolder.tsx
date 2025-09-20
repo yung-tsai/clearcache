@@ -8,7 +8,11 @@ import { Entry } from '@/lib/database.types';
 import { MacWindow } from '@/components/MacWindow';
 import { Plus, Search } from 'lucide-react';
 
-export default function JournalFolder() {
+interface JournalFolderProps {
+  onOpenEntry?: (entryId: string, title: string) => void;
+}
+
+export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,8 +121,9 @@ export default function JournalFolder() {
               key={entry.id}
               className="block border border-black bg-white p-4 hover:bg-gray-50 transition-colors cursor-pointer"
               onClick={() => {
-                // Handle entry selection in desktop interface
-                console.log('Entry clicked:', entry.id);
+                if (onOpenEntry) {
+                  onOpenEntry(entry.id, entry.title || 'Untitled Entry');
+                }
               }}
             >
               <div className="flex justify-between items-start mb-2">

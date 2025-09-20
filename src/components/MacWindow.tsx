@@ -102,8 +102,23 @@ export function MacWindow({
     >
       {/* Title Bar */}
       <div
-        className="window-titlebar h-5 bg-gradient-to-b from-gray-100 to-gray-200 border-b border-black/20 flex items-center px-2 cursor-move"
+        className="window-titlebar h-6 bg-white border-b border-black flex items-center px-2 cursor-move relative overflow-hidden"
         onMouseDown={handleMouseDown}
+        style={{
+          background: `
+            white,
+            repeating-linear-gradient(
+              0deg,
+              transparent 0px,
+              transparent 1px,
+              #000 1px,
+              #000 2px,
+              transparent 2px,
+              transparent 4px
+            )
+          `,
+          backgroundSize: '100% 4px'
+        }}
       >
         {/* Close Button */}
         {onClose && (
