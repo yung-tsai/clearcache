@@ -7,20 +7,7 @@
     /* Mac Desktop Colors */
     --mac-desktop: 200 200 185;
     --mac-menubar: 220 220 220;
-    --mac-texture: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 1px,
-      rgba(0, 0, 0, 0.03) 1px,
-      rgba(0, 0, 0, 0.03) 2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 1px,
-      rgba(0, 0, 0, 0.03) 1px,
-      rgba(0, 0, 0, 0.03) 2px
-    );
+    --mac-texture: url('/src/assets/swatch-pattern.png');
   }
 }
 
