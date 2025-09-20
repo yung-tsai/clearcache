@@ -90,59 +90,145 @@ export function MacWindow({
   return (
     <div
       ref={windowRef}
-      className={`absolute bg-white border border-black shadow-lg select-none ${className}`}
+      className={`absolute select-none ${className}`}
       style={{
         left: position.x,
         top: position.y,
         width: size.width,
         height: size.height,
         minWidth: 300,
-        minHeight: 200
+        minHeight: 200,
+        borderRadius: '11px',
+        background: '#FFFFFF',
+        border: '1px solid #000000',
+        boxShadow: '1px 1px 0px 1px #000000',
+        backdropFilter: 'blur(25px)'
       }}
     >
       {/* Title Bar */}
       <div
-        className="window-titlebar h-6 bg-white border-b border-black flex items-center px-2 cursor-move relative overflow-hidden"
+        className="window-titlebar cursor-move relative"
         onMouseDown={handleMouseDown}
         style={{
-          background: `
-            white,
-            repeating-linear-gradient(
-              0deg,
-              transparent 0px,
-              transparent 1px,
-              #000 1px,
-              #000 2px,
-              transparent 2px,
-              transparent 4px
-            )
-          `,
-          backgroundSize: '100% 4px'
+          width: '100%',
+          height: '28px',
+          background: '#FFFFFF',
+          border: '1px solid #000000',
+          borderRadius: '0px',
+          position: 'relative'
         }}
       >
+        {/* Horizontal Bars */}
+        <div 
+          style={{
+            position: 'absolute',
+            left: '4px',
+            right: '4px',
+            top: '6px',
+            height: '16px'
+          }}
+        >
+          {/* Individual bars at specific positions */}
+          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '0px', background: '#000000' }} />
+          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '3px', background: '#000000' }} />
+          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '6px', background: '#000000' }} />
+          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '9px', background: '#000000' }} />
+          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '12px', background: '#000000' }} />
+          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '15px', background: '#000000' }} />
+        </div>
+
         {/* Close Button */}
         {onClose && (
           <button
-            className="w-3 h-3 bg-white border border-black/40 hover:bg-gray-100 transition-colors flex-shrink-0"
             onClick={onClose}
             title="Close"
+            style={{
+              position: 'absolute',
+              width: '16px',
+              height: '16px',
+              left: '14px',
+              top: '6px',
+              background: '#FFFFFF',
+              border: '1px solid #000000',
+              cursor: 'pointer'
+            }}
           />
         )}
-        
-        {/* Title */}
-        <div className="flex-1 text-center text-xs font-medium text-black pointer-events-none">
-          {title}
+
+        {/* Expand Button */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '16px',
+            height: '16px',
+            right: '13px',
+            top: '6px',
+            background: '#FFFFFF',
+            border: '1px solid #000000'
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              width: '10px',
+              height: '10px',
+              left: '0px',
+              top: '0px',
+              border: '1px solid #000000'
+            }}
+          />
         </div>
         
-        {/* Spacer for balance */}
-        <div className="w-3 flex-shrink-0" />
+        {/* Title */}
+        <div 
+          style={{
+            position: 'absolute',
+            width: '246px',
+            height: '26px',
+            left: 'calc(50% - 246px/2)',
+            top: '0px',
+            background: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0px 8px'
+          }}
+        >
+          <div
+            style={{
+              width: '230px',
+              height: '26px',
+              fontFamily: 'ChicagoFLF, monospace',
+              fontWeight: '500',
+              fontSize: '20px',
+              lineHeight: '26px',
+              display: 'flex',
+              alignItems: 'center',
+              textAlign: 'center',
+              justifyContent: 'center',
+              letterSpacing: '-0.004em',
+              color: '#000000',
+              pointerEvents: 'none'
+            }}
+          >
+            {title}
+          </div>
+        </div>
       </div>
 
       {/* Content Area */}
-      <div className="h-full pb-5 pr-5 overflow-hidden">
-        <div className="h-full overflow-auto p-4">
-          {children}
-        </div>
+      <div 
+        style={{
+          position: 'absolute',
+          top: '28px',
+          left: '0px',
+          right: '0px',
+          bottom: '0px',
+          padding: '16px',
+          overflow: 'auto'
+        }}
+      >
+        {children}
       </div>
 
       {/* Resize Handle */}
