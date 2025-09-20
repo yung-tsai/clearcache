@@ -60,6 +60,9 @@ export default {
         "mac-desktop": "hsl(var(--mac-desktop))",
         "mac-menubar": "hsl(var(--mac-menubar))",
       },
+      fontFamily: {
+        'chicago': ['ChicagoFLF', 'monospace'],
+      },
       backgroundImage: {
         "mac-texture": "var(--mac-texture)",
       },

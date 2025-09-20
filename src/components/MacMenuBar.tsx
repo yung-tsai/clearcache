@@ -75,7 +75,7 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
         />
       )}
       
-      <div className="fixed top-0 left-0 right-0 h-6 bg-white flex items-start px-3 text-sm font-medium z-20" style={{ boxShadow: '0px 1px 0px #000000', fontFamily: 'ChicagoFLF', letterSpacing: '-0.35px' }}>
+      <div className="fixed top-0 left-0 right-0 h-6 bg-white flex items-start px-3 font-chicago font-medium z-20" style={{ boxShadow: '0px 1px 0px #000000', fontSize: '14px', lineHeight: '18px', letterSpacing: '-0.35px', fontWeight: '500' }}>
         {menuItems.map((menu) => (
           <div key={menu.label} className="relative">
             <button
