@@ -75,13 +75,14 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
         />
       )}
       
-      <div className="fixed top-0 left-0 right-0 h-6 bg-white border-b border-black/20 flex items-center px-4 text-sm font-medium z-20">
+      <div className="fixed top-0 left-0 right-0 h-6 bg-white flex items-start px-3 text-sm font-medium z-20" style={{ boxShadow: '0px 1px 0px #000000', fontFamily: 'ChicagoFLF', letterSpacing: '-0.35px' }}>
         {menuItems.map((menu) => (
           <div key={menu.label} className="relative">
             <button
-              className={`px-2 py-1 hover:bg-black/10 transition-colors ${
+              className={`h-6 flex items-center rounded transition-colors gap-0.5 ${
                 activeMenu === menu.label ? 'bg-black/15' : ''
               }`}
+              style={{ padding: '4px 8px' }}
               onClick={() => handleMenuClick(menu.label)}
             >
               {menu.label}
