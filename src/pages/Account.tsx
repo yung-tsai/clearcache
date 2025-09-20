@@ -1,7 +1,7 @@
 import { AuthGuard } from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import MacWindow from '@/components/MacWindow';
+import { MacWindow } from '@/components/MacWindow';
 
 export default function Account() {
   const { user, profile, signOut } = useAuth();

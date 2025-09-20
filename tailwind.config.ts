@@ -57,6 +57,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "mac-desktop": "hsl(var(--mac-desktop))",
+        "mac-menubar": "hsl(var(--mac-menubar))",
+      },
+      backgroundImage: {
+        "mac-texture": "var(--mac-texture)",
       },
       borderRadius: {
         lg: "var(--radius)",

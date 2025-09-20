@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import MacWindow from '@/components/MacWindow';
+import { MacWindow } from '@/components/MacWindow';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');

@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { FeatureFlag, Profile } from '@/lib/database.types';
-import MacWindow from '@/components/MacWindow';
+import { MacWindow } from '@/components/MacWindow';
 
 export default function AdminPanel() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);

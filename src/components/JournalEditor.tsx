@@ -8,7 +8,7 @@ import { useSpeech } from '@/hooks/useSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
-import MacWindow from '@/components/MacWindow';
+import { MacWindow } from '@/components/MacWindow';
 import { Mic, MicOff, Save, Trash2 } from 'lucide-react';
 
 interface JournalEditorProps {
@@ -70,11 +70,9 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
     setLoading(true);
     
     try {
-      // Use a test user ID when no user is logged in
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
       
       if (entryId) {
-        // Update existing entry
         const { error } = await supabase
           .from('entries')
           .update({
@@ -90,7 +88,6 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
           description: 'Your journal entry has been saved.',
         });
       } else {
-        // Create new entry
         const { data, error } = await supabase
           .from('entries')
           .insert({
@@ -107,10 +104,6 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
           title: 'Entry Saved',
           description: 'Your journal entry has been created.',
         });
-
-        // Redirect to the new entry
-        navigate(`/app/entry/${data.id}`);
-        return;
       }
     } catch (error) {
       console.error('Save error:', error);
@@ -164,77 +157,73 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <MacWindow title={entryId ? 'Edit Entry' : 'New Journal Entry'} className="max-w-4xl mx-auto">
-        <div className="p-6 space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-mono font-bold mb-2">
-              Title
-            </label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Entry title (optional)"
-              className="font-mono"
-            />
-          </div>
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="title" className="block text-sm font-mono font-bold mb-2">
+          Title
+        </label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Entry title (optional)"
+          className="font-mono"
+        />
+      </div>
 
-          <div>
-            <label htmlFor="content" className="block text-sm font-mono font-bold mb-2">
-              Content
-              {isSupported && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMicToggle}
-                  className="ml-2 p-1 h-6 w-6"
-                >
-                  {isListening ? <MicOff size={12} /> : <Mic size={12} />}
-                </Button>
-              )}
-            </label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Start writing your thoughts..."
-              className="min-h-[300px] font-mono resize-none"
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end">
-            {entryId && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={loading}
-                className="mac-button flex items-center gap-1"
-              >
-                <Trash2 size={12} />
-                Delete
-              </Button>
-            )}
-            
+      <div>
+        <label htmlFor="content" className="block text-sm font-mono font-bold mb-2">
+          Content
+          {isSupported && (
             <Button
-              onClick={handleSave}
-              disabled={loading || (!title.trim() && !content.trim())}
-              className="mac-button flex items-center gap-1"
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleMicToggle}
+              className="ml-2 p-1 h-6 w-6"
             >
-              <Save size={12} />
-              {loading ? 'Saving...' : 'Save'}
+              {isListening ? <MicOff size={12} /> : <Mic size={12} />}
             </Button>
-          </div>
-
-          {isListening && (
-            <div className="text-center text-sm font-mono text-muted-foreground">
-              🎤 Listening... Speak now
-            </div>
           )}
+        </label>
+        <Textarea
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Start writing your thoughts..."
+          className="min-h-[300px] font-mono resize-none"
+        />
+      </div>
+
+      <div className="flex gap-2 justify-end">
+        {entryId && (
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={loading}
+            className="mac-button flex items-center gap-1"
+          >
+            <Trash2 size={12} />
+            Delete
+          </Button>
+        )}
+        
+        <Button
+          onClick={handleSave}
+          disabled={loading || (!title.trim() && !content.trim())}
+          className="mac-button flex items-center gap-1"
+        >
+          <Save size={12} />
+          {loading ? 'Saving...' : 'Save'}
+        </Button>
+      </div>
+
+      {isListening && (
+        <div className="text-center text-sm font-mono text-muted-foreground">
+          🎤 Listening... Speak now
         </div>
-      </MacWindow>
+      )}
     </div>
   );
 }
