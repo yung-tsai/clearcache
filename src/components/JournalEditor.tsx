@@ -65,11 +65,14 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
   };
 
   const handleSave = async () => {
-    if (!user || (!title.trim() && !content.trim())) return;
+    if (!title.trim() && !content.trim()) return;
 
     setLoading(true);
     
     try {
+      // Use a test user ID when no user is logged in
+      const userId = user?.id || '00000000-0000-0000-0000-000000000000';
+      
       if (entryId) {
         // Update existing entry
         const { error } = await supabase
@@ -91,7 +94,7 @@ export default function JournalEditor({ entryId }: JournalEditorProps) {
         const { data, error } = await supabase
           .from('entries')
           .insert({
-            user_id: user.id,
+            user_id: userId,
             title: title.trim() || null,
             content: content.trim() || null,
           })

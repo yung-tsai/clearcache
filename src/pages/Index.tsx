@@ -7,14 +7,16 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        navigate('/app/folder');
-      } else {
-        navigate('/login');
-      }
-    }
-  }, [user, loading, navigate]);
+    // Temporarily bypass authentication for testing
+    navigate('/app/folder');
+    // if (!loading) {
+    //   if (user) {
+    //     navigate('/app/folder');
+    //   } else {
+    //     navigate('/login');
+    //   }
+    // }
+  }, [navigate]);
 
   if (loading) {
     return (
