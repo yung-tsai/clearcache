@@ -66,9 +66,37 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
     });
   };
 
+  const extractTitle = (content: string | null) => {
+    if (!content) return 'Untitled Entry';
+    
+    // Try to extract first line from HTML content
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    const firstDiv = div.querySelector('div');
+    
+    if (firstDiv) {
+      const title = firstDiv.textContent?.trim() || '';
+      return title || 'Untitled Entry';
+    }
+    
+    // Fallback for plain text
+    const firstLine = content.split('\n')[0]?.trim() || '';
+    return firstLine || 'Untitled Entry';
+  };
+
   const getPreview = (content: string | null) => {
     if (!content) return 'No content';
-    return content.length > 100 ? content.substring(0, 100) + '...' : content;
+    
+    // Extract text from HTML
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    const textContent = div.textContent || div.innerText || '';
+    
+    // Skip the first line (title) and show the rest as preview
+    const lines = textContent.split('\n').filter(line => line.trim());
+    const previewText = lines.length > 1 ? lines.slice(1).join(' ') : (lines[0] || 'No content');
+    
+    return previewText.length > 100 ? previewText.substring(0, 100) + '...' : previewText;
   };
 
   return (
@@ -122,13 +150,13 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               className="block border border-black bg-white p-4 hover:bg-gray-50 transition-colors cursor-pointer"
               onClick={() => {
                 if (onOpenEntry) {
-                  onOpenEntry(entry.id, entry.title || 'Untitled Entry');
+                  onOpenEntry(entry.id, extractTitle(entry.content));
                 }
               }}
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-mono font-bold text-sm truncate flex-1 mr-4">
-                  {entry.title || 'Untitled Entry'}
+                  {extractTitle(entry.content)}
                 </h3>
                 <div className="text-xs font-mono text-muted-foreground">
                   {formatDate(entry.created_at)}

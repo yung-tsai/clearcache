@@ -1,14 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeech } from '@/hooks/useSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
-import { MacWindow } from '@/components/MacWindow';
 import { Mic, MicOff, Save, Trash2 } from 'lucide-react';
 
 interface JournalEditorProps {
@@ -17,24 +13,32 @@ interface JournalEditorProps {
 }
 
 export default function JournalEditor({ entryId, onDelete }: JournalEditorProps) {
-  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
 
   useEffect(() => {
     if (entryId) {
       loadEntry(entryId);
+    } else {
+      // Set default date for new entries
+      const today = new Date();
+      const dateString = today.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      setContent(`<div style="font-size: 24px; font-weight: bold;">${dateString}</div><div><br></div>`);
     }
   }, [entryId]);
 
   useEffect(() => {
-    if (transcript) {
-      setContent(prev => prev + ' ' + transcript);
+    if (transcript && contentRef.current) {
+      insertTextAtCursor(transcript);
       reset();
     }
   }, [transcript, reset]);
@@ -53,31 +57,38 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           description: 'Could not load entry',
           variant: 'destructive',
         });
-        navigate('/app/folder');
         return;
       }
 
       setEntry(data);
-      setTitle(data.title || '');
-      setContent(data.content || '');
+      setContent(data.content || '<div><br></div>');
     } catch (error) {
       console.error('Error loading entry:', error);
     }
   };
 
+  const extractTextTitle = (htmlContent: string) => {
+    const div = document.createElement('div');
+    div.innerHTML = htmlContent;
+    const firstLine = div.querySelector('div')?.textContent || '';
+    return firstLine.trim();
+  };
+
   const handleSave = async () => {
-    if (!title.trim() && !content.trim()) return;
+    const plainTextContent = contentRef.current?.textContent?.trim() || '';
+    if (!plainTextContent) return;
 
     setLoading(true);
     
     try {
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
+      const title = extractTextTitle(content);
       
       if (entryId) {
         const { error } = await supabase
           .from('entries')
           .update({
-            title: title.trim() || null,
+            title: title || null,
             content: content.trim() || null,
           })
           .eq('id', entryId);
@@ -93,7 +104,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           .from('entries')
           .insert({
             user_id: userId,
-            title: title.trim() || null,
+            title: title || null,
             content: content.trim() || null,
           })
           .select()
@@ -157,42 +168,97 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
     }
   };
 
+  const insertTextAtCursor = (text: string) => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+
+  const execCommand = useCallback((command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    contentRef.current?.focus();
+  }, []);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          e.preventDefault();
+          execCommand('bold');
+          break;
+        case 'i':
+          e.preventDefault();
+          execCommand('italic');
+          break;
+        case 'u':
+          e.preventDefault();
+          execCommand('underline');
+          break;
+        case 'x':
+          if (e.shiftKey) {
+            e.preventDefault();
+            execCommand('strikeThrough');
+          }
+          break;
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      execCommand('indent');
+    } else if (e.key === ' ') {
+      // Check for dash + space to convert to bullet
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
+        if (textBefore.endsWith('-')) {
+          e.preventDefault();
+          // Remove the dash
+          range.setStart(range.startContainer, range.startOffset - 1);
+          range.deleteContents();
+          // Insert bullet point
+          const bulletNode = document.createTextNode('• ');
+          range.insertNode(bulletNode);
+          range.setStartAfter(bulletNode);
+          range.setEndAfter(bulletNode);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+    }
+  }, [execCommand]);
+
+  const handleContentChange = useCallback(() => {
+    if (contentRef.current) {
+      setContent(contentRef.current.innerHTML);
+    }
+  }, []);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    insertTextAtCursor(text);
+  }, []);
+
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="title" className="block text-sm font-mono font-bold mb-2">
-          Title
-        </label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Entry title (optional)"
-          className="font-mono"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="content" className="block text-sm font-mono font-bold mb-2">
-          Content
-          {isSupported && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleMicToggle}
-              className="ml-2 p-1 h-6 w-6"
-            >
-              {isListening ? <MicOff size={12} /> : <Mic size={12} />}
-            </Button>
-          )}
-        </label>
-        <Textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Start writing your thoughts..."
-          className="min-h-[300px] font-mono resize-none"
+        <div
+          ref={contentRef}
+          contentEditable
+          suppressContentEditableWarning={true}
+          onInput={handleContentChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          className="min-h-[300px] font-mono resize-none border border-input bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
+          dangerouslySetInnerHTML={{ __html: content }}
+          style={{ lineHeight: '1.5' }}
         />
       </div>
 
@@ -210,9 +276,22 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           </Button>
         )}
         
+        {isSupported && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleMicToggle}
+            disabled={loading}
+            className="mac-button flex items-center gap-1"
+          >
+            {isListening ? <MicOff size={12} /> : <Mic size={12} />}
+            {isListening ? 'Stop' : 'Mic'}
+          </Button>
+        )}
+        
         <Button
           onClick={handleSave}
-          disabled={loading || (!title.trim() && !content.trim())}
+          disabled={loading || !contentRef.current?.textContent?.trim()}
           className="mac-button flex items-center gap-1"
         >
           <Save size={12} />
