@@ -30,12 +30,12 @@ export function MacDock({ onDockAction }: MacDockProps) {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onDockAction(item.action)}
-                  className="w-16 h-16 flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 hover:bg-white/20 active:scale-95"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
                 >
                   <img 
                     src={item.icon} 
                     alt={item.name}
-                    className="w-16 h-16 object-contain"
+                    className="w-8 h-8 object-contain"
                   />
                 </button>
               </TooltipTrigger>
