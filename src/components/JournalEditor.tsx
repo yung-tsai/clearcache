@@ -13,7 +13,6 @@ interface JournalEditorProps {
 }
 
 export default function JournalEditor({ entryId, onDelete }: JournalEditorProps) {
-  const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -26,13 +25,24 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
       loadEntry(entryId);
     } else {
       // Set default date for new entries
-      const today = new Date();
-      const dateString = today.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      setContent(`<div style="font-size: 24px; font-weight: bold;">${dateString}</div><div><br></div>`);
+      setTimeout(() => {
+        if (contentRef.current) {
+          const today = new Date();
+          const dateString = today.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          });
+          contentRef.current.innerHTML = `<div style="font-size: 24px; font-weight: bold;">${dateString}</div><div><br></div>`;
+          // Position cursor at the end
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(contentRef.current);
+          range.collapse(false);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        }
+      }, 0);
     }
   }, [entryId]);
 
@@ -61,7 +71,9 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
       }
 
       setEntry(data);
-      setContent(data.content || '<div><br></div>');
+      if (contentRef.current) {
+        contentRef.current.innerHTML = data.content || '<div><br></div>';
+      }
     } catch (error) {
       console.error('Error loading entry:', error);
     }
@@ -82,14 +94,15 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
     
     try {
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
-      const title = extractTextTitle(content);
+      const htmlContent = contentRef.current?.innerHTML || '';
+      const title = extractTextTitle(htmlContent);
       
       if (entryId) {
         const { error } = await supabase
           .from('entries')
           .update({
             title: title || null,
-            content: content.trim() || null,
+            content: htmlContent.trim() || null,
           })
           .eq('id', entryId);
 
@@ -105,7 +118,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           .insert({
             user_id: userId,
             title: title || null,
-            content: content.trim() || null,
+            content: htmlContent.trim() || null,
           })
           .select()
           .single();
@@ -235,9 +248,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
   }, [execCommand]);
 
   const handleContentChange = useCallback(() => {
-    if (contentRef.current) {
-      setContent(contentRef.current.innerHTML);
-    }
+    // Content is now managed directly through contentRef, no state updates needed
   }, []);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -257,7 +268,6 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           className="min-h-[300px] font-mono resize-none border border-input bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
-          dangerouslySetInnerHTML={{ __html: content }}
           style={{ lineHeight: '1.5' }}
         />
       </div>
