@@ -3,8 +3,9 @@ import { MacMenuBar } from './MacMenuBar';
 import { MacWindow } from './MacWindow';
 import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
+import JournalCalendar from './JournalCalendar';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar';
 
 interface OpenWindow {
   id: string;
@@ -32,6 +33,13 @@ export function MacDesktop() {
           id: windowId,
           content: 'journal-folder',
           title: 'Journal Folder'
+        }]);
+        break;
+      case 'journal-calendar':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'journal-calendar',
+          title: 'Calendar'
         }]);
         break;
     }
@@ -106,6 +114,10 @@ export function MacDesktop() {
           onDelete={() => handleEntryDeleted(window.id)}
           onTitleUpdate={(title) => handleTitleUpdate(window.id, title)}
         />;
+      case 'journal-calendar':
+        return <JournalCalendar onOpenEntry={(entryId) => {
+          handleOpenEntry(entryId, 'Edit Entry');
+        }} />;
       default:
         return null;
     }

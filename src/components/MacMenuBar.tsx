@@ -33,6 +33,7 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
       label: 'View',
       items: [
         { label: 'Journal Folder', action: 'journal-folder', shortcut: '⌘1' },
+        { label: 'Calendar', action: 'journal-calendar', shortcut: '⌘2' },
         { label: 'Refresh', action: 'refresh', shortcut: '⌘R', disabled: true },
         { label: '---' },
         { label: 'Zoom In', action: 'zoom-in', shortcut: '⌘+', disabled: true },
