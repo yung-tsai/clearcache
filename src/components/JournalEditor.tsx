@@ -5,7 +5,7 @@ import { useSpeech } from '@/hooks/useSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
-import { Mic, MicOff, Save, Trash2 } from 'lucide-react';
+import { Mic, MicOff, Trash2 } from 'lucide-react';
 
 interface JournalEditorProps {
   entryId?: string;
@@ -15,8 +15,10 @@ interface JournalEditorProps {
 export default function JournalEditor({ entryId, onDelete }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
-  const [canSave, setCanSave] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastSavedContentRef = useRef<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
@@ -34,15 +36,20 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
             month: 'short', 
             day: 'numeric' 
           });
-          contentRef.current.innerHTML = `<div style="font-size: 24px; font-weight: bold;">${dateString}</div><div><br></div>`;
-          setCanSave(true); // Enable save for new entries with default content
-          // Position cursor at the end
+          const defaultContent = `<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${dateString}</div><div><br></div>`;
+          contentRef.current.innerHTML = defaultContent;
+          lastSavedContentRef.current = defaultContent;
+          
+          // Position cursor at the end of title
           const range = document.createRange();
           const sel = window.getSelection();
-          range.selectNodeContents(contentRef.current);
-          range.collapse(false);
-          sel?.removeAllRanges();
-          sel?.addRange(range);
+          const firstDiv = contentRef.current.querySelector('div');
+          if (firstDiv && firstDiv.firstChild) {
+            range.setStartAfter(firstDiv.firstChild);
+            range.collapse(true);
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          }
         }
       }, 0);
     }
@@ -74,8 +81,9 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
 
       setEntry(data);
       if (contentRef.current) {
-        contentRef.current.innerHTML = data.content || '<div><br></div>';
-        setCanSave(!!data.content); // Enable save if there's existing content
+        const content = data.content || '<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">Untitled Entry</div><div><br></div>';
+        contentRef.current.innerHTML = content;
+        lastSavedContentRef.current = content;
       }
     } catch (error) {
       console.error('Error loading entry:', error);
@@ -89,69 +97,81 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
     return firstLine.trim();
   };
 
-  const handleSave = async () => {
-    const plainTextContent = contentRef.current?.textContent?.trim() || '';
-    console.log('Save attempt - Plain text content:', plainTextContent);
-    console.log('HTML content:', contentRef.current?.innerHTML);
-    
-    if (!plainTextContent) {
-      console.log('Save blocked - no content');
-      return;
-    }
+  const saveEntry = useCallback(async (htmlContent: string) => {
+    if (!htmlContent || htmlContent === lastSavedContentRef.current) return;
 
     setLoading(true);
     
     try {
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
-      const htmlContent = contentRef.current?.innerHTML || '';
       const title = extractTextTitle(htmlContent);
-      
-      console.log('Saving with title:', title, 'content:', htmlContent);
       
       if (entryId) {
         const { error } = await supabase
           .from('entries')
           .update({
-            title: title || null,
-            content: htmlContent.trim() || null,
+            title: title || 'Untitled Entry',
+            content: htmlContent.trim(),
           })
           .eq('id', entryId);
 
         if (error) throw error;
-
-        toast({
-          title: 'Entry Updated',
-          description: 'Your journal entry has been saved.',
-        });
       } else {
         const { data, error } = await supabase
           .from('entries')
           .insert({
             user_id: userId,
-            title: title || null,
-            content: htmlContent.trim() || null,
+            title: title || 'Untitled Entry',
+            content: htmlContent.trim(),
           })
           .select()
           .maybeSingle();
 
         if (error) throw error;
-
-        toast({
-          title: 'Entry Saved',
-          description: 'Your journal entry has been created.',
-        });
+        
+        // Update the entryId for future saves
+        if (data) {
+          // This is a new entry, we might want to update the URL or handle this differently
+          console.log('New entry created:', data.id);
+        }
       }
+      
+      lastSavedContentRef.current = htmlContent;
+      setHasUnsavedChanges(false);
+      
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Auto-save error:', error);
+      
+      // Store locally on failure and show warning
+      localStorage.setItem(`journal_backup_${entryId || 'new'}`, htmlContent);
       toast({
         title: 'Save Error',
-        description: 'Could not save your entry. Please try again.',
+        description: 'Changes saved locally. Will retry automatically.',
         variant: 'destructive',
       });
+      
+      // Retry in 10 seconds
+      setTimeout(() => {
+        saveEntry(htmlContent);
+      }, 10000);
+      
     } finally {
       setLoading(false);
     }
-  };
+  }, [entryId, user?.id, toast]);
+
+  const debouncedSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      if (contentRef.current && hasUnsavedChanges) {
+        const htmlContent = contentRef.current.innerHTML;
+        saveEntry(htmlContent);
+      }
+    }, 1500); // Save 1.5 seconds after user stops typing
+  }, [saveEntry, hasUnsavedChanges]);
 
   const handleDelete = async () => {
     if (!entryId || !confirm('Are you sure you want to delete this entry?')) return;
@@ -205,13 +225,56 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
     }
   };
 
+  const isInTitleLine = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount || !contentRef.current) return false;
+    
+    const range = selection.getRangeAt(0);
+    const firstDiv = contentRef.current.querySelector('div');
+    
+    if (!firstDiv) return false;
+    
+    // Check if cursor is within the first div
+    return firstDiv.contains(range.commonAncestorContainer) || 
+           range.commonAncestorContainer === firstDiv;
+  }, []);
+
   const execCommand = useCallback((command: string, value?: string) => {
+    // Prevent formatting commands on title line
+    if (isInTitleLine()) {
+      return;
+    }
     document.execCommand(command, false, value);
     contentRef.current?.focus();
+  }, [isInTitleLine]);
+
+  const ensureTitleFormatting = useCallback(() => {
+    if (!contentRef.current) return;
+    
+    const firstDiv = contentRef.current.querySelector('div');
+    if (firstDiv) {
+      // Ensure title div has correct styling
+      firstDiv.style.fontSize = '24px';
+      firstDiv.style.fontWeight = 'bold';
+      firstDiv.style.marginBottom = '8px';
+      
+      // If title is empty, set placeholder
+      if (!firstDiv.textContent?.trim()) {
+        firstDiv.textContent = 'Untitled Entry';
+      }
+    }
   }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const inTitleLine = isInTitleLine();
+    
     if (e.ctrlKey || e.metaKey) {
+      // Prevent formatting commands on title line
+      if (inTitleLine && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        return;
+      }
+      
       switch (e.key.toLowerCase()) {
         case 'b':
           e.preventDefault();
@@ -232,38 +295,78 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           }
           break;
       }
+    } else if (e.key === 'Enter' && inTitleLine) {
+      // Handle Enter key in title line - create new normal paragraph
+      e.preventDefault();
+      
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Create new div for content (normal formatting)
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = '<br>';
+        
+        // Insert after the title div
+        const firstDiv = contentRef.current?.querySelector('div');
+        if (firstDiv && firstDiv.nextSibling) {
+          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
+        } else if (firstDiv) {
+          contentRef.current?.appendChild(newDiv);
+        }
+        
+        // Position cursor in the new div
+        const newRange = document.createRange();
+        newRange.setStart(newDiv, 0);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        
+        // Trigger content change
+        setHasUnsavedChanges(true);
+        debouncedSave();
+      }
     } else if (e.key === 'Tab') {
       e.preventDefault();
       execCommand('indent');
     } else if (e.key === ' ') {
-      // Check for dash + space to convert to bullet
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
-        if (textBefore.endsWith('-')) {
-          e.preventDefault();
-          // Remove the dash
-          range.setStart(range.startContainer, range.startOffset - 1);
-          range.deleteContents();
-          // Insert bullet point
-          const bulletNode = document.createTextNode('• ');
-          range.insertNode(bulletNode);
-          range.setStartAfter(bulletNode);
-          range.setEndAfter(bulletNode);
-          selection.removeAllRanges();
-          selection.addRange(range);
+      // Check for dash + space to convert to bullet (only in content, not title)
+      if (!inTitleLine) {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
+          if (textBefore.endsWith('-')) {
+            e.preventDefault();
+            // Remove the dash
+            range.setStart(range.startContainer, range.startOffset - 1);
+            range.deleteContents();
+            // Insert bullet point
+            const bulletNode = document.createTextNode('• ');
+            range.insertNode(bulletNode);
+            range.setStartAfter(bulletNode);
+            range.setEndAfter(bulletNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
         }
       }
     }
-  }, [execCommand]);
+  }, [isInTitleLine, execCommand, debouncedSave]);
 
   const handleContentChange = useCallback(() => {
-    // Check if content has meaningful text (not just empty divs/breaks)
-    const textContent = contentRef.current?.textContent?.trim() || '';
-    const hasContent = textContent.length > 0;
-    setCanSave(hasContent);
-    console.log('Content changed, can save:', hasContent, 'text:', textContent);
+    ensureTitleFormatting();
+    setHasUnsavedChanges(true);
+    debouncedSave();
+  }, [ensureTitleFormatting, debouncedSave]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, []);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -313,15 +416,6 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
             {isListening ? 'Stop' : 'Mic'}
           </Button>
         )}
-        
-        <Button
-          onClick={handleSave}
-          disabled={loading || !canSave}
-          className="mac-button flex items-center gap-1"
-        >
-          <Save size={12} />
-          {loading ? 'Saving...' : 'Save'}
-        </Button>
       </div>
 
       {isListening && (
