@@ -24,7 +24,7 @@ export function MacDock({ onDockAction }: MacDockProps) {
   return (
     <TooltipProvider>
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/20 border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/10 shadow-lg">
           {dockItems.map((item) => (
             <Tooltip key={item.action}>
               <TooltipTrigger asChild>
