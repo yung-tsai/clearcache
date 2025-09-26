@@ -5,19 +5,19 @@ import { useSpeech } from '@/hooks/useSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
-import { Mic, MicOff, Trash2 } from 'lucide-react';
+import { Mic, MicOff, Trash2, Save } from 'lucide-react';
 
 interface JournalEditorProps {
   entryId?: string;
   onDelete?: () => void;
+  onEntryCreated?: (entryId: string, title: string) => void;
 }
 
-export default function JournalEditor({ entryId, onDelete }: JournalEditorProps) {
+export default function JournalEditor({ entryId, onDelete, onEntryCreated }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSavedContentRef = useRef<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -116,6 +116,11 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           .eq('id', entryId);
 
         if (error) throw error;
+        
+        toast({
+          title: 'Saved',
+          description: 'Your entry has been saved.',
+        });
       } else {
         const { data, error } = await supabase
           .from('entries')
@@ -131,8 +136,12 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
         
         // Update the entryId for future saves
         if (data) {
-          // This is a new entry, we might want to update the URL or handle this differently
           console.log('New entry created:', data.id);
+          onEntryCreated?.(data.id, title);
+          toast({
+            title: 'Entry Created',
+            description: 'Your new entry has been saved.',
+          });
         }
       }
       
@@ -140,38 +149,25 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
       setHasUnsavedChanges(false);
       
     } catch (error) {
-      console.error('Auto-save error:', error);
+      console.error('Save error:', error);
       
-      // Store locally on failure and show warning
-      localStorage.setItem(`journal_backup_${entryId || 'new'}`, htmlContent);
       toast({
         title: 'Save Error',
-        description: 'Changes saved locally. Will retry automatically.',
+        description: 'Could not save your entry. Please try again.',
         variant: 'destructive',
       });
-      
-      // Retry in 10 seconds
-      setTimeout(() => {
-        saveEntry(htmlContent);
-      }, 10000);
       
     } finally {
       setLoading(false);
     }
-  }, [entryId, user?.id, toast]);
+  }, [entryId, user?.id, toast, onEntryCreated]);
 
-  const debouncedSave = useCallback(() => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
+  const handleSave = useCallback(() => {
+    if (contentRef.current) {
+      const htmlContent = contentRef.current.innerHTML;
+      saveEntry(htmlContent);
     }
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      if (contentRef.current && hasUnsavedChanges) {
-        const htmlContent = contentRef.current.innerHTML;
-        saveEntry(htmlContent);
-      }
-    }, 1500); // Save 1.5 seconds after user stops typing
-  }, [saveEntry, hasUnsavedChanges]);
+  }, [saveEntry]);
 
   const handleDelete = async () => {
     if (!entryId || !confirm('Are you sure you want to delete this entry?')) return;
@@ -324,7 +320,6 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
         
         // Trigger content change
         setHasUnsavedChanges(true);
-        debouncedSave();
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
@@ -352,22 +347,12 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
         }
       }
     }
-  }, [isInTitleLine, execCommand, debouncedSave]);
+  }, [isInTitleLine, execCommand]);
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
     setHasUnsavedChanges(true);
-    debouncedSave();
-  }, [ensureTitleFormatting, debouncedSave]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [ensureTitleFormatting]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
@@ -390,9 +375,9 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
         />
       </div>
 
-      {/* Fixed mic button */}
-      {isSupported && (
-        <div className="fixed bottom-4 left-4 z-10">
+      {/* Fixed buttons */}
+      <div className="fixed bottom-4 left-4 z-10 flex gap-2">
+        {isSupported && (
           <Button
             type="button"
             variant="ghost"
@@ -403,8 +388,19 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
             {isListening ? <MicOff size={12} /> : <Mic size={12} />}
             {isListening ? 'Stop' : 'Mic'}
           </Button>
-        </div>
-      )}
+        )}
+        
+        <Button
+          type="button"
+          variant={hasUnsavedChanges ? "default" : "ghost"}
+          onClick={handleSave}
+          disabled={loading || !hasUnsavedChanges}
+          className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50"
+        >
+          <Save size={12} />
+          {hasUnsavedChanges ? 'Save' : 'Saved'}
+        </Button>
+      </div>
 
       {/* Delete button in corner */}
       {entryId && (

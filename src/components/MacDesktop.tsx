@@ -51,6 +51,21 @@ export function MacDesktop() {
     setWindows(prev => prev.filter(w => w.id !== windowId));
   };
 
+  const handleEntryCreated = (windowId: string, entryId: string, title: string) => {
+    // Convert the new-entry window to an edit-entry window
+    setWindows(prev => prev.map(w => 
+      w.id === windowId 
+        ? { ...w, content: 'edit-entry', title: title || 'Edit Entry', entryId }
+        : w
+    ));
+    // Refresh journal folder windows to show the new entry
+    setWindows(prev => prev.map(w => 
+      w.content === 'journal-folder' 
+        ? { ...w, id: w.id + '-refreshed-' + Date.now() }
+        : w
+    ));
+  };
+
   const handleEntryDeleted = (windowId: string) => {
     // Close the editor window
     handleCloseWindow(windowId);
@@ -65,7 +80,9 @@ export function MacDesktop() {
   const renderWindowContent = (window: OpenWindow) => {
     switch (window.content) {
       case 'new-entry':
-        return <JournalEditor />;
+        return <JournalEditor onEntryCreated={(entryId, title) => {
+          handleEntryCreated(window.id, entryId, title);
+        }} />;
       case 'journal-folder':
         return <JournalFolder onOpenEntry={handleOpenEntry} />;
       case 'edit-entry':
