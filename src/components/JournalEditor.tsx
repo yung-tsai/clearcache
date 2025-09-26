@@ -376,8 +376,8 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
   }, []);
 
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-4 h-full flex flex-col">
+      <div className="flex-1">
         <div
           ref={contentRef}
           contentEditable
@@ -385,37 +385,41 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           onInput={handleContentChange}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          className="min-h-[300px] font-mono resize-none border border-input bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-md"
+          className="min-h-[500px] h-full font-mono resize-none bg-white text-sm focus-visible:outline-none"
           style={{ lineHeight: '1.5' }}
         />
       </div>
 
-      <div className="flex gap-2 justify-end">
-        {entryId && (
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={loading}
-            className="mac-button flex items-center gap-1"
-          >
-            <Trash2 size={12} />
-            Delete
-          </Button>
-        )}
+      <div className="flex gap-2 justify-between items-center">
+        <div>
+          {isSupported && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleMicToggle}
+              disabled={loading}
+              className="mac-button flex items-center gap-1"
+            >
+              {isListening ? <MicOff size={12} /> : <Mic size={12} />}
+              {isListening ? 'Stop' : 'Mic'}
+            </Button>
+          )}
+        </div>
         
-        {isSupported && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleMicToggle}
-            disabled={loading}
-            className="mac-button flex items-center gap-1"
-          >
-            {isListening ? <MicOff size={12} /> : <Mic size={12} />}
-            {isListening ? 'Stop' : 'Mic'}
-          </Button>
-        )}
+        <div>
+          {entryId && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={loading}
+              className="mac-button flex items-center gap-1"
+            >
+              <Trash2 size={12} />
+              Delete
+            </Button>
+          )}
+        </div>
       </div>
 
       {isListening && (
