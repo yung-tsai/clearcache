@@ -15,6 +15,7 @@ interface JournalEditorProps {
 export default function JournalEditor({ entryId, onDelete }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
+  const [canSave, setCanSave] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -34,6 +35,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
             day: 'numeric' 
           });
           contentRef.current.innerHTML = `<div style="font-size: 24px; font-weight: bold;">${dateString}</div><div><br></div>`;
+          setCanSave(true); // Enable save for new entries with default content
           // Position cursor at the end
           const range = document.createRange();
           const sel = window.getSelection();
@@ -73,6 +75,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
       setEntry(data);
       if (contentRef.current) {
         contentRef.current.innerHTML = data.content || '<div><br></div>';
+        setCanSave(!!data.content); // Enable save if there's existing content
       }
     } catch (error) {
       console.error('Error loading entry:', error);
@@ -88,7 +91,13 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
 
   const handleSave = async () => {
     const plainTextContent = contentRef.current?.textContent?.trim() || '';
-    if (!plainTextContent) return;
+    console.log('Save attempt - Plain text content:', plainTextContent);
+    console.log('HTML content:', contentRef.current?.innerHTML);
+    
+    if (!plainTextContent) {
+      console.log('Save blocked - no content');
+      return;
+    }
 
     setLoading(true);
     
@@ -96,6 +105,8 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
       const htmlContent = contentRef.current?.innerHTML || '';
       const title = extractTextTitle(htmlContent);
+      
+      console.log('Saving with title:', title, 'content:', htmlContent);
       
       if (entryId) {
         const { error } = await supabase
@@ -121,7 +132,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
             content: htmlContent.trim() || null,
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -248,7 +259,11 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
   }, [execCommand]);
 
   const handleContentChange = useCallback(() => {
-    // Content is now managed directly through contentRef, no state updates needed
+    // Check if content has meaningful text (not just empty divs/breaks)
+    const textContent = contentRef.current?.textContent?.trim() || '';
+    const hasContent = textContent.length > 0;
+    setCanSave(hasContent);
+    console.log('Content changed, can save:', hasContent, 'text:', textContent);
   }, []);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
@@ -301,7 +316,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
         
         <Button
           onClick={handleSave}
-          disabled={loading || !contentRef.current?.textContent?.trim()}
+          disabled={loading || !canSave}
           className="mac-button flex items-center gap-1"
         >
           <Save size={12} />
