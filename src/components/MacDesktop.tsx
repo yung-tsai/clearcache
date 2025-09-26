@@ -4,6 +4,8 @@ import { MacWindow } from './MacWindow';
 import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
+import journalFolderIcon from '@/assets/journal-folder.png';
+import newEntryIcon from '@/assets/new-entry.png';
 
 export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar';
 
@@ -131,6 +133,43 @@ export function MacDesktop() {
       <MacMenuBar onMenuAction={handleMenuAction} />
       
       <div className="relative h-full pt-6">
+        {/* Desktop Icons */}
+        <div className="absolute top-8 left-8 flex flex-col gap-6">
+          {/* Journal Folder Icon */}
+          <div 
+            className="flex flex-col items-center cursor-pointer group"
+            onClick={() => handleMenuAction('journal-folder')}
+          >
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img 
+                src={journalFolderIcon} 
+                alt="Journal Folder" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="text-xs font-chicago text-center mt-1 px-2 py-1 rounded group-hover:bg-white/20">
+              Journal Folder
+            </span>
+          </div>
+
+          {/* New Entry Icon */}
+          <div 
+            className="flex flex-col items-center cursor-pointer group"
+            onClick={() => handleMenuAction('new-entry')}
+          >
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img 
+                src={newEntryIcon} 
+                alt="New Entry" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="text-xs font-chicago text-center mt-1 px-2 py-1 rounded group-hover:bg-white/20">
+              New Entry
+            </span>
+          </div>
+        </div>
+
         {windows.map((window, index) => (
           <MacWindow
             key={window.id}
