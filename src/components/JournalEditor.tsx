@@ -376,7 +376,7 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
   }, []);
 
   return (
-    <div className="space-y-4 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col relative">
       <div className="flex-1">
         <div
           ref={contentRef}
@@ -386,45 +386,45 @@ export default function JournalEditor({ entryId, onDelete }: JournalEditorProps)
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           className="min-h-[500px] h-full font-mono resize-none bg-white text-sm focus-visible:outline-none"
-          style={{ lineHeight: '1.5' }}
+          style={{ lineHeight: '1.5', paddingBottom: '80px' }} // Add padding for fixed button
         />
       </div>
 
-      <div className="flex gap-2 justify-between items-center">
-        <div>
-          {isSupported && (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleMicToggle}
-              disabled={loading}
-              className="mac-button flex items-center gap-1"
-            >
-              {isListening ? <MicOff size={12} /> : <Mic size={12} />}
-              {isListening ? 'Stop' : 'Mic'}
-            </Button>
-          )}
+      {/* Fixed mic button */}
+      {isSupported && (
+        <div className="fixed bottom-4 left-4 z-10">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleMicToggle}
+            disabled={loading}
+            className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50"
+          >
+            {isListening ? <MicOff size={12} /> : <Mic size={12} />}
+            {isListening ? 'Stop' : 'Mic'}
+          </Button>
         </div>
-        
-        <div>
-          {entryId && (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={loading}
-              className="mac-button flex items-center gap-1"
-            >
-              <Trash2 size={12} />
-              Delete
-            </Button>
-          )}
+      )}
+
+      {/* Delete button in corner */}
+      {entryId && (
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={loading}
+            className="mac-button flex items-center gap-1"
+          >
+            <Trash2 size={12} />
+            Delete
+          </Button>
         </div>
-      </div>
+      )}
 
       {isListening && (
-        <div className="text-center text-sm font-mono text-muted-foreground">
-          🎤 Listening... Speak now
+        <div className="fixed bottom-16 left-4 text-xs font-mono text-muted-foreground bg-white px-2 py-1 rounded border shadow-sm">
+          🎤 Listening...
         </div>
       )}
     </div>
