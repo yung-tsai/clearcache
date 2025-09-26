@@ -11,9 +11,10 @@ interface JournalEditorProps {
   entryId?: string;
   onDelete?: () => void;
   onEntryCreated?: (entryId: string, title: string) => void;
+  onTitleUpdate?: (title: string) => void;
 }
 
-export default function JournalEditor({ entryId, onDelete, onEntryCreated }: JournalEditorProps) {
+export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -116,6 +117,9 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated }: Jou
           .eq('id', entryId);
 
         if (error) throw error;
+        
+        // Notify parent about title update
+        onTitleUpdate?.(title || 'Untitled Entry');
         
         toast({
           title: 'Saved',
@@ -392,7 +396,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated }: Jou
         
         <Button
           type="button"
-          variant={hasUnsavedChanges ? "default" : "ghost"}
+          variant="ghost"
           onClick={handleSave}
           disabled={loading || !hasUnsavedChanges}
           className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50"
@@ -400,23 +404,20 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated }: Jou
           <Save size={12} />
           {hasUnsavedChanges ? 'Save' : 'Saved'}
         </Button>
-      </div>
 
-      {/* Delete button in corner */}
-      {entryId && (
-        <div className="flex justify-end">
+        {entryId && (
           <Button
             type="button"
-            variant="destructive"
+            variant="ghost"
             onClick={handleDelete}
             disabled={loading}
-            className="mac-button flex items-center gap-1"
+            className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50 text-red-600 hover:text-red-700"
           >
             <Trash2 size={12} />
             Delete
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {isListening && (
         <div className="fixed bottom-16 left-4 text-xs font-mono text-muted-foreground bg-white px-2 py-1 rounded border shadow-sm">

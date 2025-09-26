@@ -154,17 +154,9 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 }
               }}
             >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-mono font-bold text-sm truncate flex-1 mr-4">
-                  {extractTitle(entry.content)}
-                </h3>
-                <div className="text-xs font-mono text-muted-foreground">
-                  {formatDate(entry.created_at)}
-                </div>
-              </div>
-              <div className="text-xs font-mono text-muted-foreground line-clamp-2">
-                {getPreview(entry.content)}
-              </div>
+              <h3 className="font-mono font-bold text-sm">
+                {extractTitle(entry.content)}
+              </h3>
             </div>
           ))}
         </div>

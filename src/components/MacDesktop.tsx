@@ -66,6 +66,21 @@ export function MacDesktop() {
     ));
   };
 
+  const handleTitleUpdate = (windowId: string, title: string) => {
+    // Update the window title when entry title changes
+    setWindows(prev => prev.map(w => 
+      w.id === windowId 
+        ? { ...w, title: title || 'Edit Entry' }
+        : w
+    ));
+    // Refresh journal folder windows to show updated titles
+    setWindows(prev => prev.map(w => 
+      w.content === 'journal-folder' 
+        ? { ...w, id: w.id + '-refreshed-' + Date.now() }
+        : w
+    ));
+  };
+
   const handleEntryDeleted = (windowId: string) => {
     // Close the editor window
     handleCloseWindow(windowId);
@@ -86,7 +101,11 @@ export function MacDesktop() {
       case 'journal-folder':
         return <JournalFolder onOpenEntry={handleOpenEntry} />;
       case 'edit-entry':
-        return <JournalEditor entryId={window.entryId} onDelete={() => handleEntryDeleted(window.id)} />;
+        return <JournalEditor 
+          entryId={window.entryId} 
+          onDelete={() => handleEntryDeleted(window.id)}
+          onTitleUpdate={(title) => handleTitleUpdate(window.id, title)}
+        />;
       default:
         return null;
     }
