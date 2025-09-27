@@ -64,7 +64,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
       <img 
         src={icon.icon} 
         alt={icon.name}
-        className="w-12 h-12 object-contain pointer-events-none mb-1"
+        className="w-8 h-8 object-contain pointer-events-none mb-1"
       />
       <span className="text-xs text-black bg-white px-0.5 py-0.5 font-medium text-center leading-tight">
         {icon.name}
