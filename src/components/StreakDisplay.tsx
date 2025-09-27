@@ -158,7 +158,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
             <div 
               key={streak.title} 
               className="animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
+              style={{ animationDelay: `${index * 600}ms` }}
             >
               {/* Mac-style two-column layout */}
               <div className="flex items-center justify-between mb-1">
@@ -175,10 +175,10 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                 <div className="flex-1">
                   <Progress 
                     value={animatedPercentage} 
-                    className="h-2 bg-gray-200"
+                    className="h-2 mac-progress"
                     style={{
-                      transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                      transitionDelay: `${index * 100}ms`
+                      transition: 'all 2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transitionDelay: `${index * 400}ms`
                     }}
                   />
                 </div>
@@ -211,7 +211,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
             <div 
               key={streak.title}
               className="animate-fade-in"
-              style={{ animationDelay: `${index * 150}ms` }}
+              style={{ animationDelay: `${index * 800}ms` }}
             >
               {/* Two-column Mac layout: Text | Progress Bar */}
               <div className="grid grid-cols-2 gap-4 items-center">
@@ -237,10 +237,10 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                   </div>
                   <Progress 
                     value={animatedPercentage}
-                    className="h-3 bg-gray-200"
+                    className="h-3 mac-progress"
                     style={{
-                      transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)',
-                      transitionDelay: `${index * 150}ms`
+                      transition: 'all 2.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transitionDelay: `${index * 600}ms`
                     }}
                   />
                   <div className="text-right">

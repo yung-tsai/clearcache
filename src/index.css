@@ -201,4 +201,20 @@
   .mac-button:active {
     box-shadow: inset 1px 1px 2px hsl(var(--mac-black));
   }
+
+  /* Classic Mac Progress Bar */
+  .mac-progress {
+    @apply border border-black bg-white;
+    border-radius: 0 !important;
+  }
+
+  .mac-progress-fill {
+    @apply bg-black;
+    border-radius: 0 !important;
+    background-image: 
+      radial-gradient(circle at 1px 1px, white 0.5px, transparent 0.5px),
+      radial-gradient(circle at 3px 3px, white 0.5px, transparent 0.5px);
+    background-size: 4px 4px, 4px 4px;
+    background-position: 0 0, 2px 2px;
+  }
 }
