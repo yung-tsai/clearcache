@@ -216,9 +216,9 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
               className="animate-fade-in"
               style={{ animationDelay: `${index * 700}ms` }}
             >
-              {/* Two-column Mac layout: Text | Progress Bar */}
-              <div className="grid grid-cols-[2fr,3fr] gap-6 items-center">
-                {/* Left column: Text info - wider to prevent wrapping */}
+              {/* Three-column Mac layout: Text | Progress Bar | Values */}
+              <div className="grid grid-cols-[2fr,3fr,2fr] gap-6 items-center">
+                {/* Left column: Text info */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4 text-gray-600" />
@@ -226,25 +226,24 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                   </div>
                 </div>
                 
-                {/* Right column: Progress bar with values on sides - consistent width */}
+                {/* Middle column: Progress bar only */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-gray-600 w-[85px] flex-shrink-0">
-                      {streak.value}/{streak.max} {streak.unit}
-                    </span>
-                    <div className="w-[200px] flex-shrink-0">
-                      <Progress 
-                        value={animatedPercentage}
-                        className="h-3 mac-progress w-full"
-                        style={{
-                          transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-gray-500 w-[45px] flex-shrink-0 text-right">
-                      {Math.round(percentage)}%
-                    </span>
+                  <div className="w-full">
+                    <Progress 
+                      value={animatedPercentage}
+                      className="h-3 mac-progress w-full"
+                      style={{
+                        transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    />
                   </div>
+                </div>
+                
+                {/* Right column: Values */}
+                <div className="space-y-1">
+                  <span className="text-xs font-mono text-gray-600 whitespace-nowrap">
+                    {streak.value}/{streak.max} {streak.unit}
+                  </span>
                 </div>
               </div>
               
