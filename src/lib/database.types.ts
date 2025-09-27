@@ -29,6 +29,34 @@ export interface UserOverride {
   enabled: boolean;
 }
 
+export interface UserStreaks {
+  user_id: string;
+  current_streak: number;
+  longest_streak: number;
+  last_entry_date: string | null;
+  total_entries: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Badge {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  icon: string;
+  requirement_type: 'streak' | 'total_entries';
+  requirement_value: number;
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  earned_at: string;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -71,6 +99,50 @@ export type Database = {
         Insert: UserOverride;
         Update: {
           enabled?: boolean;
+        };
+      };
+      user_streaks: {
+        Row: UserStreaks;
+        Insert: {
+          user_id: string;
+          current_streak?: number;
+          longest_streak?: number;
+          last_entry_date?: string | null;
+          total_entries?: number;
+        };
+        Update: {
+          current_streak?: number;
+          longest_streak?: number;
+          last_entry_date?: string | null;
+          total_entries?: number;
+        };
+      };
+      badges: {
+        Row: Badge;
+        Insert: {
+          key: string;
+          name: string;
+          description: string;
+          icon: string;
+          requirement_type: 'streak' | 'total_entries';
+          requirement_value: number;
+        };
+        Update: {
+          name?: string;
+          description?: string;
+          icon?: string;
+          requirement_type?: 'streak' | 'total_entries';
+          requirement_value?: number;
+        };
+      };
+      user_badges: {
+        Row: UserBadge;
+        Insert: {
+          user_id: string;
+          badge_id: string;
+        };
+        Update: {
+          earned_at?: string;
         };
       };
     };

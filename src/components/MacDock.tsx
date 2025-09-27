@@ -20,6 +20,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import journalFolderIcon from '@/assets/journal-folder.png';
 import newEntryIcon from '@/assets/new-entry.png';
 import calendarIcon from '@/assets/calendar-icon2.png';
+import streakIcon from '@/assets/streak-icon.png';
+import trophyIcon from '@/assets/trophy-icon.png';
 
 interface MacDockProps {
   onDockAction: (action: string) => void;
@@ -98,6 +100,18 @@ const defaultDockItems: DockItem[] = [
     icon: calendarIcon,
     name: 'Calendar',
     action: 'journal-calendar'
+  },
+  {
+    id: 'streaks',
+    icon: streakIcon,
+    name: 'Writing Streaks',
+    action: 'streaks'
+  },
+  {
+    id: 'achievements',
+    icon: trophyIcon,
+    name: 'Achievements',
+    action: 'achievements'
   }
 ];
 

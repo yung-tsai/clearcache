@@ -5,8 +5,12 @@ import { MacDock } from './MacDock';
 import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
+import StreakCounter from './StreakCounter';
+import BadgeDisplay from './BadgeDisplay';
+import BadgeNotification from './BadgeNotification';
+import { useRefreshStreaks } from '@/hooks/useStreaks';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'achievements';
 
 interface OpenWindow {
   id: string;
@@ -17,6 +21,7 @@ interface OpenWindow {
 
 export function MacDesktop() {
   const [windows, setWindows] = useState<OpenWindow[]>([]);
+  const refreshStreaks = useRefreshStreaks();
 
   const handleMenuAction = (action: string) => {
     const windowId = Date.now().toString();
@@ -43,6 +48,20 @@ export function MacDesktop() {
           title: 'Calendar'
         }]);
         break;
+      case 'streaks':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'streaks',
+          title: 'Writing Streaks'
+        }]);
+        break;
+      case 'achievements':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'achievements',
+          title: 'Achievements'
+        }]);
+        break;
     }
   };
 
@@ -61,6 +80,9 @@ export function MacDesktop() {
   };
 
   const handleEntryCreated = (windowId: string, entryId: string, title: string) => {
+    // Refresh streaks when a new entry is created
+    refreshStreaks();
+    
     // Convert the new-entry window to an edit-entry window
     setWindows(prev => prev.map(w => 
       w.id === windowId 
@@ -119,6 +141,18 @@ export function MacDesktop() {
         return <JournalCalendar onOpenEntry={(entryId) => {
           handleOpenEntry(entryId, 'Edit Entry');
         }} />;
+      case 'streaks':
+        return (
+          <div className="p-6 flex justify-center items-start">
+            <StreakCounter />
+          </div>
+        );
+      case 'achievements':
+        return (
+          <div className="p-6">
+            <BadgeDisplay />
+          </div>
+        );
       default:
         return null;
     }
@@ -149,6 +183,9 @@ export function MacDesktop() {
         {/* Modern macOS Dock */}
         <MacDock onDockAction={handleMenuAction} />
       </div>
+      
+      {/* Badge notification system */}
+      <BadgeNotification />
     </div>
   );
 }
