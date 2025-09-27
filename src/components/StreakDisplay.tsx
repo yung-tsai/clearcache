@@ -217,25 +217,25 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
               style={{ animationDelay: `${index * 700}ms` }}
             >
               {/* Two-column Mac layout: Text | Progress Bar */}
-              <div className="grid grid-cols-2 gap-4 items-center">
-                {/* Left column: Text info */}
+              <div className="grid grid-cols-[2fr,3fr] gap-6 items-center">
+                {/* Left column: Text info - wider to prevent wrapping */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-mono text-gray-900">{streak.title}</span>
+                    <span className="text-sm font-mono text-gray-900 whitespace-nowrap">{streak.title}</span>
                   </div>
                 </div>
                 
-                {/* Right column: Progress bar with values on sides */}
+                {/* Right column: Progress bar with values on sides - wider progress bar */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-mono text-gray-600 min-w-[70px]">
                       {streak.value}/{streak.max} {streak.unit}
                     </span>
-                    <div className="flex-1">
+                    <div className="flex-1 px-2">
                       <Progress 
                         value={animatedPercentage}
-                        className="h-3 mac-progress"
+                        className="h-3 mac-progress w-full"
                         style={{
                           transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
