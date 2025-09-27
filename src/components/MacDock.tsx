@@ -19,7 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import journalFolderIcon from '@/assets/journal-folder.png';
 import newEntryIcon from '@/assets/new-entry.png';
-import calendarIcon from '@/assets/calendar-custom.png';
+import calendarIcon from '@/assets/calendar-icon2.png';
 
 interface MacDockProps {
   onDockAction: (action: string) => void;
