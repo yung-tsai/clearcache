@@ -9,7 +9,6 @@ import {
   DragEndEvent,
   useDraggable
 } from '@dnd-kit/core';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import journalFolderIcon from '@/assets/journal-folder.png';
 import newEntryIcon from '@/assets/new-entry.png';
 import calendarIcon from '@/assets/calendar-icon2.png';
@@ -54,30 +53,23 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
   };
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          ref={setNodeRef}
-          style={style}
-          {...attributes}
-          {...listeners}
-          onClick={() => onAction(icon.action)}
-          className="w-16 h-20 flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group"
-        >
-          <img 
-            src={icon.icon} 
-            alt={icon.name}
-            className="w-12 h-12 object-contain pointer-events-none mb-1"
-          />
-          <span className="text-xs text-white drop-shadow-lg font-medium text-center leading-tight">
-            {icon.name}
-          </span>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="right" className="ml-2">
-        <p className="text-sm font-medium">{icon.name}</p>
-      </TooltipContent>
-    </Tooltip>
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => onAction(icon.action)}
+      className="w-16 h-20 flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group"
+    >
+      <img 
+        src={icon.icon} 
+        alt={icon.name}
+        className="w-12 h-12 object-contain pointer-events-none mb-1"
+      />
+      <span className="text-xs text-white drop-shadow-lg font-medium text-center leading-tight">
+        {icon.name}
+      </span>
+    </button>
   );
 }
 
@@ -191,20 +183,18 @@ export function DesktopIcons({ onIconAction }: DesktopIconsProps) {
   }
 
   return (
-    <TooltipProvider>
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        {icons.map((icon) => (
-          <DraggableIcon
-            key={icon.id}
-            icon={icon}
-            onAction={onIconAction}
-          />
-        ))}
-      </DndContext>
-    </TooltipProvider>
+    <DndContext 
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      {icons.map((icon) => (
+        <DraggableIcon
+          key={icon.id}
+          icon={icon}
+          onAction={onIconAction}
+        />
+      ))}
+    </DndContext>
   );
 }
