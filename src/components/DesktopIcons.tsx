@@ -59,14 +59,14 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
       {...attributes}
       {...listeners}
       onClick={() => onAction(icon.action)}
-      className="w-16 h-20 flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group"
+      className="w-16 h-20 flex flex-col items-center justify-center p-2 rounded-lg bg-white shadow-sm transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing"
     >
       <img 
         src={icon.icon} 
         alt={icon.name}
         className="w-12 h-12 object-contain pointer-events-none mb-1"
       />
-      <span className="text-xs text-white drop-shadow-lg font-medium text-center leading-tight">
+      <span className="text-xs text-black font-medium text-center leading-tight mt-1">
         {icon.name}
       </span>
     </button>
