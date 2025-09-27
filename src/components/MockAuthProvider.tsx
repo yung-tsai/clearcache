@@ -20,7 +20,7 @@ const MockAuthContext = createContext<AuthContextType>({
 
 // Mock user for testing
 const mockUser: User = {
-  id: 'test-user-12345',
+  id: '12345678-1234-1234-1234-123456789012', // Valid UUID format
   email: 'test@example.com',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -31,7 +31,7 @@ const mockUser: User = {
 } as User;
 
 const mockProfile: Profile = {
-  user_id: 'test-user-12345',
+  user_id: '12345678-1234-1234-1234-123456789012', // Matching UUID
   role: 'user',
   created_at: new Date().toISOString(),
 };
