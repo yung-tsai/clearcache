@@ -20,7 +20,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
   const [weeklyEntries, setWeeklyEntries] = useState(0);
   const [monthlyEntries, setMonthlyEntries] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [animateProgress, setAnimateProgress] = useState(false);
+  const [animatedBars, setAnimatedBars] = useState<Set<number>>(new Set());
   const { user } = useAuth();
 
   useEffect(() => {
@@ -42,12 +42,18 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
   }, [user]);
 
   useEffect(() => {
-    // Trigger animation after component mounts and data is loaded
+    // Trigger sequential animations after component mounts and data is loaded
     if (!loading) {
-      const timer = setTimeout(() => setAnimateProgress(true), 100);
-      return () => clearTimeout(timer);
+      const streakCount = variant === 'compact' ? 2 : 4;
+      
+      // Start animations sequentially from top to bottom
+      for (let i = 0; i < streakCount; i++) {
+        setTimeout(() => {
+          setAnimatedBars(prev => new Set([...prev, i]));
+        }, i * (variant === 'compact' ? 500 : 700));
+      }
     }
-  }, [loading]);
+  }, [loading, variant]);
 
   const loadStreakData = async () => {
     try {
@@ -152,7 +158,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
         {streaks.slice(0, 2).map((streak, index) => {
           const Icon = streak.icon;
           const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
-          const animatedPercentage = animateProgress ? percentage : 0;
+          const animatedPercentage = animatedBars.has(index) ? percentage : 0;
           
           return (
             <div 
@@ -176,8 +182,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                     value={animatedPercentage} 
                     className="h-2 mac-progress"
                     style={{
-                      transition: 'all 2.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      transitionDelay: `${index * 500}ms`
+                      transition: 'all 2.2s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   />
                 </div>
@@ -204,7 +209,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
         {streaks.map((streak, index) => {
           const Icon = streak.icon;
           const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
-          const animatedPercentage = animateProgress ? percentage : 0;
+          const animatedPercentage = animatedBars.has(index) ? percentage : 0;
           
           return (
             <div 
@@ -236,10 +241,9 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                       <Progress 
                         value={animatedPercentage}
                         className="h-3 mac-progress"
-                        style={{
-                          transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          transitionDelay: `${index * 700}ms`
-                        }}
+                    style={{
+                      transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
                       />
                     </div>
                     <span className="text-xs font-mono text-gray-500 min-w-[45px] text-right">
