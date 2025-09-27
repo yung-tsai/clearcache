@@ -25,6 +25,37 @@ export function MacDesktop() {
   const refreshStreaks = useRefreshStreaks();
 
   const handleMenuAction = (action: string) => {
+    // Check if a window with this content type already exists
+    const existingWindowIndex = windows.findIndex(window => {
+      switch (action) {
+        case 'new-entry':
+          return window.content === 'new-entry';
+        case 'journal-folder':
+          return window.content === 'journal-folder';
+        case 'journal-calendar':
+          return window.content === 'journal-calendar';
+        case 'streaks':
+          return window.content === 'streaks';
+        case 'achievements':
+          return window.content === 'achievements';
+        case 'testing':
+          return window.content === 'testing';
+        default:
+          return false;
+      }
+    });
+
+    // If window already exists, bring it to front
+    if (existingWindowIndex !== -1) {
+      const existingWindow = windows[existingWindowIndex];
+      setWindows(prev => [
+        ...prev.filter((_, index) => index !== existingWindowIndex),
+        existingWindow
+      ]);
+      return;
+    }
+
+    // Create new window if it doesn't exist
     const windowId = Date.now().toString();
     
     switch (action) {
@@ -74,6 +105,7 @@ export function MacDesktop() {
   };
 
   const handleOpenEntry = (entryId: string, title: string) => {
+    // Edit entries can have multiple instances, so always create new window
     const windowId = Date.now().toString();
     setWindows(prev => [...prev, {
       id: windowId,
