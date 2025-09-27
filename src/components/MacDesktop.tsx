@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MacMenuBar } from './MacMenuBar';
 import { MacWindow } from './MacWindow';
-import { MacDock } from './MacDock';
+import { DesktopIcons } from './DesktopIcons';
 import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
@@ -146,8 +146,8 @@ export function MacDesktop() {
           </MacWindow>
         ))}
         
-        {/* Modern macOS Dock */}
-        <MacDock onDockAction={handleMenuAction} />
+        {/* Desktop Icons */}
+        <DesktopIcons onIconAction={handleMenuAction} />
       </div>
     </div>
   );
