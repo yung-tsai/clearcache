@@ -158,7 +158,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
             <div 
               key={streak.title} 
               className="animate-fade-in"
-              style={{ animationDelay: `${index * 600}ms` }}
+              style={{ animationDelay: `${index * 500}ms` }}
             >
               {/* Mac-style two-column layout */}
               <div className="flex items-center justify-between mb-1">
@@ -177,8 +177,8 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                     value={animatedPercentage} 
                     className="h-2 mac-progress"
                     style={{
-                      transition: 'all 2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      transitionDelay: `${index * 400}ms`
+                      transition: 'all 2.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transitionDelay: `${index * 500}ms`
                     }}
                   />
                 </div>
@@ -211,7 +211,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
             <div 
               key={streak.title}
               className="animate-fade-in"
-              style={{ animationDelay: `${index * 800}ms` }}
+              style={{ animationDelay: `${index * 700}ms` }}
             >
               {/* Two-column Mac layout: Text | Progress Bar */}
               <div className="grid grid-cols-2 gap-4 items-center">
@@ -239,8 +239,8 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                     value={animatedPercentage}
                     className="h-3 mac-progress"
                     style={{
-                      transition: 'all 2.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                      transitionDelay: `${index * 600}ms`
+                      transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transitionDelay: `${index * 700}ms`
                     }}
                   />
                   <div className="text-right">

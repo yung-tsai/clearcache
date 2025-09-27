@@ -212,9 +212,7 @@
     @apply bg-black;
     border-radius: 0 !important;
     background-image: 
-      radial-gradient(circle at 1px 1px, white 0.5px, transparent 0.5px),
-      radial-gradient(circle at 3px 3px, white 0.5px, transparent 0.5px);
-    background-size: 4px 4px, 4px 4px;
-    background-position: 0 0, 2px 2px;
+      radial-gradient(circle at 0.5px 0.5px, white 0.5px, transparent 0.5px);
+    background-size: 2px 2px;
   }
 }
