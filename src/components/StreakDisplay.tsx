@@ -27,6 +27,9 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
     if (user) {
       loadStreakData();
       loadPeriodCounts();
+    } else {
+      // If no user, stop loading and show default state
+      setLoading(false);
     }
   }, [user]);
 
@@ -95,6 +98,24 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
     return (
       <div className="bg-white border border-gray-300 rounded-lg p-4">
         <div className="text-sm font-mono text-gray-500">Loading streaks...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
+        {/* Mac-style header */}
+        <div className="border-b border-gray-200 px-4 py-3">
+          <h3 className="text-sm font-mono text-gray-900">Journal Streaks</h3>
+        </div>
+        
+        {/* Content area */}
+        <div className="p-4 text-center">
+          <div className="text-sm font-mono text-gray-500">
+            Please log in to view your journal streaks
+          </div>
+        </div>
       </div>
     );
   }
