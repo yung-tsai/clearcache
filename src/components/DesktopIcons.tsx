@@ -59,7 +59,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
       {...attributes}
       {...listeners}
       onClick={() => onAction(icon.action)}
-      className="w-16 h-20 flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group"
+      className="w-16 h-20 flex flex-col items-center justify-center p-2 transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group bg-transparent"
     >
       <img 
         src={icon.icon} 
