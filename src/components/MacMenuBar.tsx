@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 
 interface MacMenuBarProps {
   onMenuAction: (action: string) => void;
@@ -7,7 +6,6 @@ interface MacMenuBarProps {
 
 export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const { signOut } = useAuth();
 
   const menuItems = [
     {
@@ -36,9 +34,6 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
       items: [
         { label: 'Journal Folder', action: 'journal-folder', shortcut: '⌘1' },
         { label: 'Calendar', action: 'journal-calendar', shortcut: '⌘2' },
-        { label: 'Writing Streaks', action: 'streaks', shortcut: '⌘3' },
-        { label: 'Achievements', action: 'achievements', shortcut: '⌘4' },
-        { label: 'Testing Utils', action: 'testing', shortcut: '⌘T' },
         { label: 'Refresh', action: 'refresh', shortcut: '⌘R', disabled: true },
         { label: '---' },
         { label: 'Zoom In', action: 'zoom-in', shortcut: '⌘+', disabled: true },
@@ -51,7 +46,6 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
         { label: 'About This App', action: 'about', disabled: true },
         { label: 'Preferences...', action: 'preferences', shortcut: '⌘,', disabled: true },
         { label: '---' },
-        { label: 'Sign Out', action: 'sign-out', shortcut: '⌘Q' },
         { label: 'System Info', action: 'system-info', disabled: true },
       ]
     }
@@ -61,16 +55,10 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
     setActiveMenu(activeMenu === label ? null : label);
   };
 
-  const handleMenuItemClick = async (action: string, disabled?: boolean) => {
-    if (disabled) return;
-    
-    if (action === 'sign-out') {
-      await signOut();
-      setActiveMenu(null);
-      return;
+  const handleMenuItemClick = (action: string, disabled?: boolean) => {
+    if (!disabled) {
+      onMenuAction(action);
     }
-    
-    onMenuAction(action);
     setActiveMenu(null);
   };
 

@@ -4,7 +4,6 @@ interface MacWindowProps {
   title: string;
   children: ReactNode;
   onClose?: () => void;
-  onFocus?: () => void;
   initialX?: number;
   initialY?: number;
   initialWidth?: number;
@@ -16,7 +15,6 @@ export function MacWindow({
   title,
   children,
   onClose,
-  onFocus,
   initialX = 100,
   initialY = 100,
   initialWidth = 600,
@@ -74,13 +72,9 @@ export function MacWindow({
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
-        // Allow dragging off-screen but keep at least 28px of title bar visible
-        const titleBarHeight = 28;
-        const minVisibleWidth = 60; // Minimum width of title bar to keep visible
-        
         setPosition({
-          x: Math.max(minVisibleWidth - size.width, Math.min(window.innerWidth - minVisibleWidth, e.clientX - dragStart.x)),
-          y: Math.max(0, Math.min(window.innerHeight - titleBarHeight, e.clientY - dragStart.y))
+          x: Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x)),
+          y: Math.max(24, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y))
         });
       }
       
@@ -115,7 +109,6 @@ export function MacWindow({
     <div
       ref={windowRef}
       className={`absolute select-none ${className}`}
-      onClick={onFocus}
       style={{
         left: position.x,
         top: position.y,
