@@ -123,15 +123,15 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: Math.max(streakData?.longest_streak || 7, 7),
       unit: 'days',
       icon: Zap,
-      description: 'Days in a row'
+      isRecord: false
     },
     {
       title: 'Weekly Goal',
       value: weeklyEntries,
       max: 7,
-      unit: 'entries',
+      unit: 'days',
       icon: Target,
-      description: 'This week'
+      isRecord: false
     },
     {
       title: 'Monthly Challenge',
@@ -139,7 +139,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: 30,
       unit: 'entries',
       icon: Calendar,
-      description: 'This month'
+      isRecord: false
     },
     {
       title: 'All Time Best',
@@ -147,7 +147,6 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: streakData?.longest_streak || 1,
       unit: 'days',
       icon: Trophy,
-      description: 'Personal record',
       isRecord: true
     }
   ];
@@ -174,8 +173,8 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
               
               {/* Progress bar with flanking values */}
               <div className="flex items-center gap-3">
-                <span className="text-sm font-mono text-gray-600 min-w-[30px]">
-                  {streak.value}/{streak.max}
+                <span className="text-sm font-mono text-gray-600 min-w-[50px]">
+                  {streak.value}/{streak.max} {streak.unit}
                 </span>
                 <div className="flex-1">
                   <Progress 
@@ -225,25 +224,21 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                     <Icon className="w-4 h-4 text-gray-600" />
                     <span className="text-sm font-mono text-gray-900">{streak.title}</span>
                   </div>
-                  <div className="text-xs font-mono text-gray-500">{streak.description}</div>
-                  <div className="text-lg font-mono text-gray-900">
-                    {streak.value} <span className="text-sm text-gray-500">{streak.unit}</span>
-                  </div>
                 </div>
                 
                 {/* Right column: Progress bar with values on sides */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-gray-600 min-w-[40px]">
-                      {streak.value}/{streak.max}
+                    <span className="text-xs font-mono text-gray-600 min-w-[70px]">
+                      {streak.value}/{streak.max} {streak.unit}
                     </span>
                     <div className="flex-1">
                       <Progress 
                         value={animatedPercentage}
                         className="h-3 mac-progress"
-                    style={{
-                      transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
+                        style={{
+                          transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
                       />
                     </div>
                     <span className="text-xs font-mono text-gray-500 min-w-[45px] text-right">
