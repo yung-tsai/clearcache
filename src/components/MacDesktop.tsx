@@ -163,6 +163,19 @@ export function MacDesktop() {
     ));
   };
 
+  const handleBringToFront = (windowId: string) => {
+    setWindows(prev => {
+      const windowIndex = prev.findIndex(w => w.id === windowId);
+      if (windowIndex === -1 || windowIndex === prev.length - 1) return prev;
+      
+      const window = prev[windowIndex];
+      return [
+        ...prev.filter((_, index) => index !== windowIndex),
+        window
+      ];
+    });
+  };
+
   const renderWindowContent = (window: OpenWindow) => {
     switch (window.content) {
       case 'new-entry':
@@ -217,6 +230,7 @@ export function MacDesktop() {
             key={window.id}
             title={window.title}
             onClose={() => handleCloseWindow(window.id)}
+            onFocus={() => handleBringToFront(window.id)}
             initialX={100 + (index * 30)}
             initialY={100 + (index * 30)}
             initialWidth={800}

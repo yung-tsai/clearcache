@@ -4,6 +4,7 @@ interface MacWindowProps {
   title: string;
   children: ReactNode;
   onClose?: () => void;
+  onFocus?: () => void;
   initialX?: number;
   initialY?: number;
   initialWidth?: number;
@@ -15,6 +16,7 @@ export function MacWindow({
   title,
   children,
   onClose,
+  onFocus,
   initialX = 100,
   initialY = 100,
   initialWidth = 600,
@@ -113,6 +115,7 @@ export function MacWindow({
     <div
       ref={windowRef}
       className={`absolute select-none ${className}`}
+      onClick={onFocus}
       style={{
         left: position.x,
         top: position.y,
