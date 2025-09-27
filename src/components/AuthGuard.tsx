@@ -11,7 +11,12 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
+  // DEVELOPMENT MODE: Set to true to bypass authentication
+  const BYPASS_AUTH = true; // ⚠️ Set to false for production
+
   useEffect(() => {
+    if (BYPASS_AUTH) return; // Skip auth checks in development
+    
     if (!loading) {
       if (!user) {
         navigate('/login');
@@ -24,6 +29,10 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
       }
     }
   }, [user, profile, loading, requireAdmin, navigate]);
+
+  if (BYPASS_AUTH) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (

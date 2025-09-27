@@ -2,9 +2,22 @@ import { MacDesktop } from '@/components/MacDesktop';
 import { AuthGuard } from '@/components/AuthGuard';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { MockAuthProvider } from '@/components/MockAuthProvider';
 
 const Index = () => {
   const { user, loading } = useAuth();
+
+  // DEVELOPMENT MODE: Set to true to bypass authentication  
+  const BYPASS_AUTH = true; // ⚠️ Set to false for production
+
+  if (BYPASS_AUTH) {
+    // Mock user context for testing - enables streaks/badges to work
+    return (
+      <MockAuthProvider>
+        <MacDesktop />
+      </MockAuthProvider>
+    );
+  }
 
   if (loading) {
     return (

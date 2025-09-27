@@ -1,10 +1,20 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMockAuth } from '@/components/MockAuthProvider';
 import type { UserStreaks, Badge, UserBadge } from '@/lib/database.types';
 
+// Hook to get auth from either real or mock provider
+const useCurrentAuth = () => {
+  try {
+    return useMockAuth();
+  } catch {
+    return useAuth();
+  }
+};
+
 export function useUserStreaks() {
-  const { user } = useAuth();
+  const { user } = useCurrentAuth();
 
   return useQuery({
     queryKey: ['user-streaks', user?.id],
@@ -25,7 +35,7 @@ export function useUserStreaks() {
 }
 
 export function useUserBadges() {
-  const { user } = useAuth();
+  const { user } = useCurrentAuth();
 
   return useQuery({
     queryKey: ['user-badges', user?.id],
@@ -69,7 +79,7 @@ export function useAllBadges() {
 // Hook to refresh streak and badge data (used when entries are created)
 export function useRefreshStreaks() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = useCurrentAuth();
 
   return () => {
     if (user?.id) {

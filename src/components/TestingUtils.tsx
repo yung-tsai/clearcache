@@ -3,12 +3,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMockAuth } from '@/components/MockAuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useRefreshStreaks } from '@/hooks/useStreaks';
 
+// Hook to get auth from either real or mock provider
+const useCurrentAuth = () => {
+  try {
+    return useMockAuth();
+  } catch {
+    return useAuth();
+  }
+};
+
 const TestingUtils: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
-  const { user } = useAuth();
+  const { user } = useCurrentAuth();
   const { toast } = useToast();
   const refreshStreaks = useRefreshStreaks();
 
