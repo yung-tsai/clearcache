@@ -160,18 +160,17 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
               className="animate-fade-in"
               style={{ animationDelay: `${index * 500}ms` }}
             >
-              {/* Mac-style two-column layout */}
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-mono text-gray-900">{streak.title}</span>
-                </div>
-                <span className="text-sm font-mono text-gray-600">
-                  {streak.value}/{streak.max}
-                </span>
+              {/* Title row */}
+              <div className="flex items-center gap-2 mb-2">
+                <Icon className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-mono text-gray-900">{streak.title}</span>
               </div>
               
+              {/* Progress bar with flanking values */}
               <div className="flex items-center gap-3">
+                <span className="text-sm font-mono text-gray-600 min-w-[30px]">
+                  {streak.value}/{streak.max}
+                </span>
                 <div className="flex-1">
                   <Progress 
                     value={animatedPercentage} 
@@ -227,25 +226,24 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                   </div>
                 </div>
                 
-                {/* Right column: Progress bar */}
+                {/* Right column: Progress bar with values on sides */}
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-mono text-gray-500">Progress</span>
-                    <span className="text-xs font-mono text-gray-600">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-gray-600 min-w-[40px]">
                       {streak.value}/{streak.max}
                     </span>
-                  </div>
-                  <Progress 
-                    value={animatedPercentage}
-                    className="h-3 mac-progress"
-                    style={{
-                      transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      transitionDelay: `${index * 700}ms`
-                    }}
-                  />
-                  <div className="text-right">
-                    <span className="text-xs font-mono text-gray-500">
-                      {Math.round(percentage)}% complete
+                    <div className="flex-1">
+                      <Progress 
+                        value={animatedPercentage}
+                        className="h-3 mac-progress"
+                        style={{
+                          transition: 'all 3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          transitionDelay: `${index * 700}ms`
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono text-gray-500 min-w-[45px] text-right">
+                      {Math.round(percentage)}%
                     </span>
                   </div>
                 </div>
