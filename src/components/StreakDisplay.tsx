@@ -233,7 +233,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                       value={animatedPercentage}
                       className="h-3 mac-progress w-full"
                       style={{
-                        transition: 'all 8s cubic-bezier(0.4, 0, 0.2, 1)'
+                        transition: 'all 2s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     />
                   </div>
