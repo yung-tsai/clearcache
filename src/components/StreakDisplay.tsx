@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Calendar, Target, Zap, Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +20,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
   const [weeklyEntries, setWeeklyEntries] = useState(0);
   const [monthlyEntries, setMonthlyEntries] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [animateProgress, setAnimateProgress] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -30,6 +29,14 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       loadPeriodCounts();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Trigger animation after component mounts and data is loaded
+    if (!loading) {
+      const timer = setTimeout(() => setAnimateProgress(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   const loadStreakData = async () => {
     try {
@@ -85,7 +92,11 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
   };
 
   if (loading) {
-    return <div className="text-sm font-mono text-muted-foreground">Loading streaks...</div>;
+    return (
+      <div className="bg-white border border-gray-300 rounded-lg p-4">
+        <div className="text-sm font-mono text-gray-500">Loading streaks...</div>
+      </div>
+    );
   }
 
   const streaks = [
@@ -95,7 +106,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: Math.max(streakData?.longest_streak || 7, 7),
       unit: 'days',
       icon: Zap,
-      color: 'text-orange-600'
+      description: 'Days in a row'
     },
     {
       title: 'Weekly Goal',
@@ -103,7 +114,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: 7,
       unit: 'entries',
       icon: Target,
-      color: 'text-blue-600'
+      description: 'This week'
     },
     {
       title: 'Monthly Challenge',
@@ -111,7 +122,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: 30,
       unit: 'entries',
       icon: Calendar,
-      color: 'text-green-600'
+      description: 'This month'
     },
     {
       title: 'All Time Best',
@@ -119,29 +130,50 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
       max: streakData?.longest_streak || 1,
       unit: 'days',
       icon: Trophy,
-      color: 'text-purple-600',
+      description: 'Personal record',
       isRecord: true
     }
   ];
 
   if (variant === 'compact') {
     return (
-      <div className="space-y-2">
-        {streaks.slice(0, 2).map((streak) => {
+      <div className="bg-white border border-gray-300 rounded-lg p-4 space-y-3">
+        {streaks.slice(0, 2).map((streak, index) => {
           const Icon = streak.icon;
           const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
+          const animatedPercentage = animateProgress ? percentage : 0;
           
           return (
-            <div key={streak.title} className="flex items-center gap-3">
-              <Icon className={`w-4 h-4 ${streak.color}`} />
-              <div className="flex-1">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-mono">{streak.title}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {streak.value} {streak.unit}
-                  </Badge>
+            <div 
+              key={streak.title} 
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              {/* Mac-style two-column layout */}
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Icon className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-mono text-gray-900">{streak.title}</span>
                 </div>
-                <Progress value={percentage} className="h-2" />
+                <span className="text-sm font-mono text-gray-600">
+                  {streak.value}/{streak.max}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <Progress 
+                    value={animatedPercentage} 
+                    className="h-2 bg-gray-200"
+                    style={{
+                      transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transitionDelay: `${index * 100}ms`
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-mono text-gray-500 min-w-[40px] text-right">
+                  {Math.round(percentage)}%
+                </span>
               </div>
             </div>
           );
@@ -151,36 +183,71 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {streaks.map((streak) => {
-        const Icon = streak.icon;
-        const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
-        
-        return (
-          <Card key={streak.title} className="relative overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-mono flex items-center gap-2">
-                  <Icon className={`w-4 h-4 ${streak.color}`} />
-                  {streak.title}
-                </CardTitle>
-                <Badge variant="secondary" className="font-mono">
-                  {streak.value}/{streak.max}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Progress value={percentage} className="h-3" />
-                <div className="flex justify-between text-xs text-muted-foreground font-mono">
-                  <span>{streak.value} {streak.unit}</span>
-                  <span>{Math.round(percentage)}%</span>
+    <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
+      {/* Mac-style header */}
+      <div className="border-b border-gray-200 px-4 py-3">
+        <h3 className="text-sm font-mono text-gray-900">Journal Streaks</h3>
+      </div>
+      
+      {/* Content area */}
+      <div className="p-4 space-y-4">
+        {streaks.map((streak, index) => {
+          const Icon = streak.icon;
+          const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
+          const animatedPercentage = animateProgress ? percentage : 0;
+          
+          return (
+            <div 
+              key={streak.title}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
+              {/* Two-column Mac layout: Text | Progress Bar */}
+              <div className="grid grid-cols-2 gap-4 items-center">
+                {/* Left column: Text info */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-mono text-gray-900">{streak.title}</span>
+                  </div>
+                  <div className="text-xs font-mono text-gray-500">{streak.description}</div>
+                  <div className="text-lg font-mono text-gray-900">
+                    {streak.value} <span className="text-sm text-gray-500">{streak.unit}</span>
+                  </div>
+                </div>
+                
+                {/* Right column: Progress bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-mono text-gray-500">Progress</span>
+                    <span className="text-xs font-mono text-gray-600">
+                      {streak.value}/{streak.max}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={animatedPercentage}
+                    className="h-3 bg-gray-200"
+                    style={{
+                      transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transitionDelay: `${index * 150}ms`
+                    }}
+                  />
+                  <div className="text-right">
+                    <span className="text-xs font-mono text-gray-500">
+                      {Math.round(percentage)}% complete
+                    </span>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+              
+              {/* Separator line between items (except last) */}
+              {index < streaks.length - 1 && (
+                <hr className="mt-4 border-gray-200" />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
