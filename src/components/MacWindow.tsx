@@ -4,10 +4,12 @@ interface MacWindowProps {
   title: string;
   children: ReactNode;
   onClose?: () => void;
+  onClick?: () => void;
   initialX?: number;
   initialY?: number;
   initialWidth?: number;
   initialHeight?: number;
+  zIndex?: number;
   className?: string;
 }
 
@@ -15,10 +17,12 @@ export function MacWindow({
   title,
   children,
   onClose,
+  onClick,
   initialX = 100,
   initialY = 100,
   initialWidth = 600,
   initialHeight = 400,
+  zIndex = 10,
   className = ""
 }: MacWindowProps) {
   const [position, setPosition] = useState({ x: initialX, y: initialY });
@@ -109,6 +113,7 @@ export function MacWindow({
     <div
       ref={windowRef}
       className={`absolute select-none ${className}`}
+      onClick={onClick}
       style={{
         left: position.x,
         top: position.y,
@@ -120,7 +125,8 @@ export function MacWindow({
         background: '#FFFFFF',
         border: '1px solid #000000',
         boxShadow: '1px 1px 0px 1px #000000',
-        backdropFilter: 'blur(25px)'
+        backdropFilter: 'blur(25px)',
+        zIndex: zIndex
       }}
     >
       {/* Title Bar */}

@@ -48,7 +48,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
     left: icon.x + (transform?.x || 0),
     top: icon.y + (transform?.y || 0),
     opacity: isDragging ? 0.7 : 1,
-    zIndex: isDragging ? 1000 : 1,
+    zIndex: isDragging ? 50 : 10,
     transition: isDragging ? 'none' : 'all 0.2s ease',
   };
 

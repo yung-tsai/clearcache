@@ -13,51 +13,94 @@ interface OpenWindow {
   content: WindowContent;
   title: string;
   entryId?: string;
+  zIndex: number;
 }
 
 export function MacDesktop() {
   const [windows, setWindows] = useState<OpenWindow[]>([]);
+  const [nextZIndex, setNextZIndex] = useState(100);
 
   const handleMenuAction = (action: string) => {
     const windowId = Date.now().toString();
+    
+    // Check for existing windows of the same type (single instance)
+    const existingWindow = windows.find(w => w.content === action);
+    if (existingWindow) {
+      // Bring existing window to front instead of creating new one
+      bringWindowToFront(existingWindow.id);
+      return;
+    }
+    
+    const newZIndex = nextZIndex;
+    setNextZIndex(prev => prev + 1);
     
     switch (action) {
       case 'new-entry':
         setWindows(prev => [...prev, {
           id: windowId,
           content: 'new-entry',
-          title: 'New Entry'
+          title: 'New Entry',
+          zIndex: newZIndex
         }]);
         break;
       case 'journal-folder':
         setWindows(prev => [...prev, {
           id: windowId,
           content: 'journal-folder',
-          title: 'Journal Folder'
+          title: 'Journal Folder',
+          zIndex: newZIndex
         }]);
         break;
       case 'journal-calendar':
         setWindows(prev => [...prev, {
           id: windowId,
           content: 'journal-calendar',
-          title: 'Calendar'
+          title: 'Calendar',
+          zIndex: newZIndex
         }]);
         break;
     }
   };
 
   const handleOpenEntry = (entryId: string, title: string) => {
+    // Check for existing edit-entry window (single instance for all entries)
+    const existingEditWindow = windows.find(w => w.content === 'edit-entry');
+    if (existingEditWindow) {
+      // Update existing window with new entry and bring to front
+      setWindows(prev => prev.map(w => 
+        w.id === existingEditWindow.id 
+          ? { ...w, entryId, title: title || 'Edit Entry', zIndex: nextZIndex }
+          : w
+      ));
+      setNextZIndex(prev => prev + 1);
+      return;
+    }
+
     const windowId = Date.now().toString();
+    const newZIndex = nextZIndex;
+    setNextZIndex(prev => prev + 1);
+    
     setWindows(prev => [...prev, {
       id: windowId,
       content: 'edit-entry',
       title: title || 'Edit Entry',
-      entryId
+      entryId,
+      zIndex: newZIndex
     }]);
   };
 
   const handleCloseWindow = (windowId: string) => {
     setWindows(prev => prev.filter(w => w.id !== windowId));
+  };
+
+  const bringWindowToFront = (windowId: string) => {
+    const newZIndex = nextZIndex;
+    setNextZIndex(prev => prev + 1);
+    setWindows(prev => prev.map(w => 
+      w.id === windowId 
+        ? { ...w, zIndex: newZIndex }
+        : w
+    ));
   };
 
   const handleEntryCreated = (windowId: string, entryId: string, title: string) => {
@@ -137,10 +180,12 @@ export function MacDesktop() {
             key={window.id}
             title={window.title}
             onClose={() => handleCloseWindow(window.id)}
+            onClick={() => bringWindowToFront(window.id)}
             initialX={100 + (index * 30)}
             initialY={100 + (index * 30)}
             initialWidth={800}
             initialHeight={600}
+            zIndex={window.zIndex}
           >
             {renderWindowContent(window)}
           </MacWindow>
