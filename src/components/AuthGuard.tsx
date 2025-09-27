@@ -12,18 +12,17 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Temporarily bypass authentication for testing
-    // if (!loading) {
-    //   if (!user) {
-    //     navigate('/login');
-    //     return;
-    //   }
+    if (!loading) {
+      if (!user) {
+        navigate('/login');
+        return;
+      }
 
-    //   if (requireAdmin && profile?.role !== 'admin') {
-    //     navigate('/app/folder');
-    //     return;
-    //   }
-    // }
+      if (requireAdmin && profile?.role !== 'admin') {
+        navigate('/');
+        return;
+      }
+    }
   }, [user, profile, loading, requireAdmin, navigate]);
 
   if (loading) {
@@ -44,10 +43,9 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     );
   }
 
-  // Temporarily bypass authentication checks for testing
-  // if (!user || (requireAdmin && profile?.role !== 'admin')) {
-  //   return null;
-  // }
+  if (!user || (requireAdmin && profile?.role !== 'admin')) {
+    return null;
+  }
 
   return <>{children}</>;
 }

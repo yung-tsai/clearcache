@@ -8,9 +8,10 @@ import JournalCalendar from './JournalCalendar';
 import StreakCounter from './StreakCounter';
 import BadgeDisplay from './BadgeDisplay';
 import BadgeNotification from './BadgeNotification';
+import TestingUtils from './TestingUtils';
 import { useRefreshStreaks } from '@/hooks/useStreaks';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'achievements';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'achievements' | 'testing';
 
 interface OpenWindow {
   id: string;
@@ -60,6 +61,13 @@ export function MacDesktop() {
           id: windowId,
           content: 'achievements',
           title: 'Achievements'
+        }]);
+        break;
+      case 'testing':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'testing',
+          title: 'Testing Utils'
         }]);
         break;
     }
@@ -151,6 +159,12 @@ export function MacDesktop() {
         return (
           <div className="p-6">
             <BadgeDisplay />
+          </div>
+        );
+      case 'testing':
+        return (
+          <div className="p-6 flex justify-center items-start">
+            <TestingUtils />
           </div>
         );
       default:

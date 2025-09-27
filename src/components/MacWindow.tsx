@@ -72,9 +72,13 @@ export function MacWindow({
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
+        // Allow dragging off-screen but keep at least 28px of title bar visible
+        const titleBarHeight = 28;
+        const minVisibleWidth = 60; // Minimum width of title bar to keep visible
+        
         setPosition({
-          x: Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x)),
-          y: Math.max(24, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y))
+          x: Math.max(minVisibleWidth - size.width, Math.min(window.innerWidth - minVisibleWidth, e.clientX - dragStart.x)),
+          y: Math.max(0, Math.min(window.innerHeight - titleBarHeight, e.clientY - dragStart.y))
         });
       }
       
