@@ -226,13 +226,13 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                   </div>
                 </div>
                 
-                {/* Right column: Progress bar with values on sides - wider progress bar */}
+                {/* Right column: Progress bar with values on sides - consistent width */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-gray-600 min-w-[70px]">
+                    <span className="text-xs font-mono text-gray-600 w-[85px] flex-shrink-0">
                       {streak.value}/{streak.max} {streak.unit}
                     </span>
-                    <div className="flex-1 px-2">
+                    <div className="w-[200px] flex-shrink-0">
                       <Progress 
                         value={animatedPercentage}
                         className="h-3 mac-progress w-full"
@@ -241,7 +241,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                         }}
                       />
                     </div>
-                    <span className="text-xs font-mono text-gray-500 min-w-[45px] text-right">
+                    <span className="text-xs font-mono text-gray-500 w-[45px] flex-shrink-0 text-right">
                       {Math.round(percentage)}%
                     </span>
                   </div>
