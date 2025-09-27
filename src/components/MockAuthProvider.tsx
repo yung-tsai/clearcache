@@ -2,6 +2,8 @@ import { createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { Profile } from '@/lib/database.types';
 
+export const TEST_USER_ID = '12345678-1234-1234-1234-123456789012';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;

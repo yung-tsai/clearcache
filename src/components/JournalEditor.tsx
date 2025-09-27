@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSpeech } from '@/hooks/useSpeech';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useMockAuth } from '@/components/MockAuthProvider';
 import { Entry } from '@/lib/database.types';
 import { Mic, MicOff, Trash2, Save } from 'lucide-react';
 
@@ -20,7 +21,14 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const lastSavedContentRef = useRef<string>('');
-  const { user } = useAuth();
+  // Prefer mock auth when available
+  let user = undefined as ReturnType<typeof useAuth>['user'] | null;
+  try {
+    // @ts-ignore - hook throws if not in provider, so wrap in try
+    user = useMockAuth().user;
+  } catch {
+    user = useAuth().user;
+  }
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
 
@@ -104,7 +112,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     setLoading(true);
     
     try {
-      const userId = user?.id || '00000000-0000-0000-0000-000000000000';
+      const userId = (user?.id as string) || '12345678-1234-1234-1234-123456789012';
       const title = extractTextTitle(htmlContent);
       
       if (entryId) {
