@@ -222,7 +222,7 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-mono text-gray-900 whitespace-nowrap">{streak.title}</span>
+                    <span className="text-xs font-mono text-gray-900 whitespace-nowrap">{streak.title}</span>
                   </div>
                 </div>
                 
