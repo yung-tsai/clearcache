@@ -87,7 +87,6 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
 }
 
 const DESKTOP_ICONS_STORAGE_KEY = 'desktop-icons-positions';
-const GRID_SIZE = 20;
 const ICON_WIDTH = 64; // 16 * 4 (w-16)
 const ICON_HEIGHT = 80; // 20 * 4 (h-20)
 
@@ -118,10 +117,6 @@ const getInitialPositions = (): DesktopIcon[] => {
     x: 20, // Start from left edge with padding
     y: 60 + (index * (ICON_HEIGHT + 10)) // Start below menu bar, spaced vertically
   }));
-};
-
-const snapToGrid = (value: number): number => {
-  return Math.round(value / GRID_SIZE) * GRID_SIZE;
 };
 
 const constrainToScreen = (x: number, y: number): { x: number; y: number } => {
@@ -187,14 +182,10 @@ export function DesktopIcons({ onIconAction }: DesktopIconsProps) {
           const newX = icon.x + delta.x;
           const newY = icon.y + delta.y;
           
-          // Apply constraints and grid snapping
+          // Apply screen constraints only
           const constrained = constrainToScreen(newX, newY);
-          const snapped = {
-            x: snapToGrid(constrained.x),
-            y: snapToGrid(constrained.y)
-          };
           
-          return { ...icon, ...snapped };
+          return { ...icon, x: constrained.x, y: constrained.y };
         }
         return icon;
       });
