@@ -6,12 +6,9 @@ import {
   PointerSensor, 
   useSensor, 
   useSensors,
-  DragEndEvent
+  DragEndEvent,
+  useDraggable
 } from '@dnd-kit/core';
-import {
-  useSortable
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import journalFolderIcon from '@/assets/journal-folder.png';
 import newEntryIcon from '@/assets/new-entry.png';
@@ -41,21 +38,19 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
-  } = useSortable({ 
+  } = useDraggable({ 
     id: icon.id,
     data: { x: icon.x, y: icon.y }
   });
 
   const style = {
-    transform: transform ? CSS.Transform.toString(transform) : undefined,
-    transition,
-    opacity: isDragging ? 0.7 : 1,
     position: 'absolute' as const,
-    left: icon.x,
-    top: icon.y,
+    left: icon.x + (transform?.x || 0),
+    top: icon.y + (transform?.y || 0),
+    opacity: isDragging ? 0.7 : 1,
     zIndex: isDragging ? 1000 : 1,
+    transition: isDragging ? 'none' : 'all 0.2s ease',
   };
 
   return (
