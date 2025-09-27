@@ -5,8 +5,9 @@ import { DesktopIcons } from './DesktopIcons';
 import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
+import StreakDisplay from './StreakDisplay';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks';
 
 interface OpenWindow {
   id: string;
@@ -56,6 +57,14 @@ export function MacDesktop() {
           id: windowId,
           content: 'journal-calendar',
           title: 'Calendar',
+          zIndex: newZIndex
+        }]);
+        break;
+      case 'streaks':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'streaks',
+          title: 'Journal Streaks',
           zIndex: newZIndex
         }]);
         break;
@@ -162,6 +171,8 @@ export function MacDesktop() {
         return <JournalCalendar onOpenEntry={(entryId) => {
           handleOpenEntry(entryId, 'Edit Entry');
         }} />;
+      case 'streaks':
+        return <StreakDisplay />;
       default:
         return null;
     }
