@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
 import { Mic, MicOff, Trash2, Save } from 'lucide-react';
-import WordLikeEditor from '@/components/editor/WordLikeEditor';
 
 interface JournalEditorProps {
   entryId?: string;
@@ -19,8 +18,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const editorRef = useRef<any>(null);
-  const [html, setHtml] = useState<string>('');
+  const contentRef = useRef<HTMLDivElement>(null);
   const lastSavedContentRef = useRef<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -32,23 +30,35 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     } else {
       // Set default date for new entries
       setTimeout(() => {
-        const today = new Date();
-        const dateString = today.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
-        const defaultContent = `<h1>${dateString}</h1><p></p>`;
-        setHtml(defaultContent);
-        lastSavedContentRef.current = defaultContent;
+        if (contentRef.current) {
+          const today = new Date();
+          const dateString = today.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          });
+          const defaultContent = `<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${dateString}</div><div><br></div>`;
+          contentRef.current.innerHTML = defaultContent;
+          lastSavedContentRef.current = defaultContent;
+          
+          // Position cursor at the end of title
+          const range = document.createRange();
+          const sel = window.getSelection();
+          const firstDiv = contentRef.current.querySelector('div');
+          if (firstDiv && firstDiv.firstChild) {
+            range.setStartAfter(firstDiv.firstChild);
+            range.collapse(true);
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          }
+        }
       }, 0);
     }
   }, [entryId]);
 
   useEffect(() => {
-    if (transcript && editorRef.current) {
-      // @ts-ignore
-      editorRef.current.chain().focus().insertContent(transcript).run();
+    if (transcript && contentRef.current) {
+      insertTextAtCursor(transcript);
       reset();
     }
   }, [transcript, reset]);
@@ -71,9 +81,11 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
       }
 
       setEntry(data);
-      const content = data.content || '<h1>Untitled Entry</h1><p></p>';
-      setHtml(content);
-      lastSavedContentRef.current = content;
+      if (contentRef.current) {
+        const content = data.content || '<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">Untitled Entry</div><div><br></div>';
+        contentRef.current.innerHTML = content;
+        lastSavedContentRef.current = content;
+      }
     } catch (error) {
       console.error('Error loading entry:', error);
     }
@@ -82,12 +94,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   const extractTextTitle = (htmlContent: string) => {
     const div = document.createElement('div');
     div.innerHTML = htmlContent;
-    // Look for h1 first, then any first text content
-    const h1 = div.querySelector('h1')?.textContent;
-    if (h1) return h1.trim();
-    
-    const firstTextNode = div.textContent || '';
-    const firstLine = firstTextNode.split('\n')[0];
+    const firstLine = div.querySelector('div')?.textContent || '';
     return firstLine.trim();
   };
 
@@ -160,9 +167,11 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   }, [entryId, user?.id, toast, onEntryCreated]);
 
   const handleSave = useCallback(() => {
-    const htmlContent = html;
-    saveEntry(htmlContent);
-  }, [saveEntry, html]);
+    if (contentRef.current) {
+      const htmlContent = contentRef.current.innerHTML;
+      saveEntry(htmlContent);
+    }
+  }, [saveEntry]);
 
   const handleDelete = async () => {
     if (!entryId || !confirm('Are you sure you want to delete this entry?')) return;
@@ -203,23 +212,170 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   };
 
-  // TipTap handles all formatting and keyboard shortcuts internally
+  const insertTextAtCursor = (text: string) => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  };
+
+  const isInTitleLine = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount || !contentRef.current) return false;
+    
+    const range = selection.getRangeAt(0);
+    const firstDiv = contentRef.current.querySelector('div');
+    
+    if (!firstDiv) return false;
+    
+    // Check if cursor is within the first div
+    return firstDiv.contains(range.commonAncestorContainer) || 
+           range.commonAncestorContainer === firstDiv;
+  }, []);
+
+  const execCommand = useCallback((command: string, value?: string) => {
+    // Prevent formatting commands on title line
+    if (isInTitleLine()) {
+      return;
+    }
+    document.execCommand(command, false, value);
+    contentRef.current?.focus();
+  }, [isInTitleLine]);
+
+  const ensureTitleFormatting = useCallback(() => {
+    if (!contentRef.current) return;
+    
+    const firstDiv = contentRef.current.querySelector('div');
+    if (firstDiv) {
+      // Ensure title div has correct styling
+      firstDiv.style.fontSize = '24px';
+      firstDiv.style.fontWeight = 'bold';
+      firstDiv.style.marginBottom = '8px';
+      
+      // If title is empty, set placeholder
+      if (!firstDiv.textContent?.trim()) {
+        firstDiv.textContent = 'Untitled Entry';
+      }
+    }
+  }, []);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const inTitleLine = isInTitleLine();
+    
+    if (e.ctrlKey || e.metaKey) {
+      // Prevent formatting commands on title line
+      if (inTitleLine && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        return;
+      }
+      
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          e.preventDefault();
+          execCommand('bold');
+          break;
+        case 'i':
+          e.preventDefault();
+          execCommand('italic');
+          break;
+        case 'u':
+          e.preventDefault();
+          execCommand('underline');
+          break;
+        case 'x':
+          if (e.shiftKey) {
+            e.preventDefault();
+            execCommand('strikeThrough');
+          }
+          break;
+      }
+    } else if (e.key === 'Enter' && inTitleLine) {
+      // Handle Enter key in title line - create new normal paragraph
+      e.preventDefault();
+      
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Create new div for content (normal formatting)
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = '<br>';
+        
+        // Insert after the title div
+        const firstDiv = contentRef.current?.querySelector('div');
+        if (firstDiv && firstDiv.nextSibling) {
+          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
+        } else if (firstDiv) {
+          contentRef.current?.appendChild(newDiv);
+        }
+        
+        // Position cursor in the new div
+        const newRange = document.createRange();
+        newRange.setStart(newDiv, 0);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        
+        // Trigger content change
+        setHasUnsavedChanges(true);
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      execCommand('indent');
+    } else if (e.key === ' ') {
+      // Check for dash + space to convert to bullet (only in content, not title)
+      if (!inTitleLine) {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
+          if (textBefore.endsWith('-')) {
+            e.preventDefault();
+            // Remove the dash
+            range.setStart(range.startContainer, range.startOffset - 1);
+            range.deleteContents();
+            // Insert bullet point
+            const bulletNode = document.createTextNode('• ');
+            range.insertNode(bulletNode);
+            range.setStartAfter(bulletNode);
+            range.setEndAfter(bulletNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
+    }
+  }, [isInTitleLine, execCommand]);
+
+  const handleContentChange = useCallback(() => {
+    ensureTitleFormatting();
+    setHasUnsavedChanges(true);
+  }, [ensureTitleFormatting]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    insertTextAtCursor(text);
+  }, []);
 
   return (
     <div className="space-y-4 h-full flex flex-col relative">
       <div className="flex-1">
-        <WordLikeEditor
-          value={html}
-          onChange={(val) => {
-            setHtml(val);
-            setHasUnsavedChanges(val.trim() !== lastSavedContentRef.current.trim());
-          }}
-          onReady={(editor) => {
-            // store editor instance for voice insertion
-            // @ts-ignore
-            editorRef.current = editor;
-          }}
-          className="bg-white rounded-md p-2"
+        <div
+          ref={contentRef}
+          contentEditable
+          suppressContentEditableWarning={true}
+          onInput={handleContentChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          className="min-h-[500px] h-full font-mono resize-none bg-white text-sm focus-visible:outline-none"
+          style={{ lineHeight: '1.5', paddingBottom: '80px' }} // Add padding for fixed button
         />
       </div>
 
