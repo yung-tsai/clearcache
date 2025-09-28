@@ -472,7 +472,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
         execCommand('indent');
       }
     } else if (e.key === ' ') {
-      // Convert "- " or "1. " at start of a block into lists (not in title)
+      // Convert "- " or "1. " at start of a block into real lists (not in title)
       if (!inTitleLine) {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
@@ -488,7 +488,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
               }
               n = n.parentNode;
             }
-            return contentRef.current;
+            return null; // don't fallback to editor root to avoid large deletions
           };
 
           const block = getBlockElement(range.startContainer);
@@ -501,24 +501,37 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
           const beforeText = fromStart.toString().replace(/\u00A0/g, ' ');
           const trimmed = beforeText.trim();
 
-          // Trigger only if marker is the first thing in the block
           const isDashTrigger = trimmed === '-';
           const numberMatch = trimmed.match(/^(\d+)\.$/);
 
           if (isDashTrigger || numberMatch) {
-            e.preventDefault(); // prevent the actual space from being inserted
+            e.preventDefault();
 
-            // Remove the marker from the DOM (from start of block to caret)
-            const del = document.createRange();
-            del.setStart(block, 0);
-            del.setEnd(range.startContainer, range.startOffset);
-            del.deleteContents();
-
-            // Toggle the appropriate list type
+            // Toggle list first so browser creates a proper <ul>/<ol><li>
             document.execCommand(isDashTrigger ? 'insertUnorderedList' : 'insertOrderedList');
 
-            // Ensure focus remains and caret is inside the new empty li
-            setTimeout(() => contentRef.current?.focus(), 0);
+            // Clean the typed marker from the new <li>
+            requestAnimationFrame(() => {
+              const sel = window.getSelection();
+              if (!sel || !sel.anchorNode) return;
+              let n: Node | null = sel.anchorNode;
+              while (n && (n as HTMLElement) !== contentRef.current && (n as HTMLElement).nodeType === 1 && (n as HTMLElement).tagName !== 'LI') {
+                n = n.parentNode;
+              }
+              if (n && (n as HTMLElement).tagName === 'LI') {
+                const li = n as HTMLLIElement;
+                // Remove leading markers like '-' or '1.' and optional spaces
+                li.innerHTML = li.innerHTML.replace(/^\s*(?:-|(\d+)\.)\s*/, '');
+                // Place caret at start of li content
+                const r = document.createRange();
+                r.selectNodeContents(li);
+                r.collapse(true);
+                const s = window.getSelection();
+                s?.removeAllRanges();
+                s?.addRange(r);
+              }
+            });
+
             setHasUnsavedChanges(true);
           }
         }
