@@ -388,6 +388,39 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     setHasUnsavedChanges(true);
   };
 
+  // Dash to list conversion intentionally disabled to match Word behavior:
+  // Typing "- " should NOT auto-convert to bullets unless the user explicitly
+  // chooses list formatting. Leaving helpers below for potential future use.
+  const toggleBulletAtSelection = () => {
+    const li = getCurrentLI();
+    if (li) {
+      // Turn off bullet for current item
+      const para = document.createElement('div');
+      const html = li.innerHTML.trim();
+      para.innerHTML = html && html !== '<br>' ? html : '<br>';
+      const ul = li.parentElement as HTMLUListElement | null;
+      ul?.insertBefore(para, li);
+      ul?.removeChild(li);
+      if (ul) cleanupEmptyUL(ul);
+      moveCursorToStart(para);
+      setHasUnsavedChanges(true);
+      return;
+    }
+
+    const block = getCurrentBlockDiv();
+    if (block && !isInTitleLine()) {
+      // Convert current paragraph block to a list item
+      const ul = document.createElement('ul');
+      const newLi = document.createElement('li');
+      const html = block.innerHTML.trim();
+      newLi.innerHTML = html && html !== '<br>' ? html : '<br>';
+      ul.appendChild(newLi);
+      block.parentElement?.replaceChild(ul, block);
+      moveCursorToStart(newLi);
+      setHasUnsavedChanges(true);
+    }
+  };
+
   const getTextBeforeCursorInNode = (node: HTMLElement) => {
     const sel = getSelection();
     if (!sel || !sel.rangeCount) return '';
@@ -397,45 +430,6 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     tmp.setEnd(range.startContainer, range.startOffset);
     return tmp.toString();
   };
-
-  const convertDashLineToList = () => {
-    const block = getCurrentBlockDiv();
-    if (!block) return;
-    const before = getTextBeforeCursorInNode(block);
-    if (/^\s*-$/.test(before)) {
-      const ul = document.createElement('ul');
-      const li = document.createElement('li');
-      li.innerHTML = '<br>';
-      ul.appendChild(li);
-      block.parentElement?.replaceChild(ul, block);
-      moveCursorToStart(li);
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  // Fallback conversion after input: if a block starts with "- ", turn it into a list item
-  const convertBlockStartingWithDashToList = () => {
-    const block = getCurrentBlockDiv();
-    if (!block || isInList()) return;
-    // Read visible text (innerText handles BR correctly)
-    const text = (block.innerText || '').replace(/\u00A0/g, ' ');
-    const match = text.match(/^\s*-\s(.*)$/);
-    if (match) {
-      const remainder = match[1] ?? '';
-      const ul = document.createElement('ul');
-      const li = document.createElement('li');
-      if (remainder.length) {
-        li.textContent = remainder;
-      } else {
-        li.innerHTML = '<br>';
-      }
-      ul.appendChild(li);
-      block.parentElement?.replaceChild(ul, block);
-      moveCursorToStart(li);
-      setHasUnsavedChanges(true);
-    }
-  };
-
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const inTitleLine = isInTitleLine();
 
@@ -463,6 +457,13 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
           if (e.shiftKey) {
             e.preventDefault();
             execCommand('strikeThrough');
+          }
+          break;
+        case '8':
+          // Ctrl/Cmd + Shift + 8 toggles bullet list (like Google Docs)
+          if (e.shiftKey) {
+            e.preventDefault();
+            toggleBulletAtSelection();
           }
           break;
       }
@@ -522,30 +523,14 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
       return;
     }
 
-    if (e.key === ' ') {
-      // Only convert dash to bullet at line start and not in title or existing list
-      if (!inTitleLine && !isInList()) {
-        const block = getCurrentBlockDiv();
-        if (block) {
-          const before = getTextBeforeCursorInNode(block);
-          if (/^\s*-$/.test(before)) {
-            e.preventDefault();
-            convertDashLineToList();
-            return;
-          }
-        }
-      }
-    }
-
     // Any other key resets double-enter tracking
     lastEmptyLIRef.current = null;
   }, [isInTitleLine, execCommand, getCurrentLI, getCurrentBlockDiv, isInList]);
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
-    convertBlockStartingWithDashToList();
     setHasUnsavedChanges(true);
-  }, [ensureTitleFormatting, convertBlockStartingWithDashToList]);
+  }, [ensureTitleFormatting]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
