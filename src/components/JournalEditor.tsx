@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
 import { Mic, MicOff, Trash2, Save } from 'lucide-react';
+import WordLikeEditor from '@/components/editor/WordLikeEditor';
 
 interface JournalEditorProps {
   entryId?: string;
@@ -18,7 +19,8 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<any>(null);
+  const [html, setHtml] = useState<string>('');
   const lastSavedContentRef = useRef<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -30,35 +32,23 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     } else {
       // Set default date for new entries
       setTimeout(() => {
-        if (contentRef.current) {
-          const today = new Date();
-          const dateString = today.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-          });
-          const defaultContent = `<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${dateString}</div><div><br></div>`;
-          contentRef.current.innerHTML = defaultContent;
-          lastSavedContentRef.current = defaultContent;
-          
-          // Position cursor at the end of title
-          const range = document.createRange();
-          const sel = window.getSelection();
-          const firstDiv = contentRef.current.querySelector('div');
-          if (firstDiv && firstDiv.firstChild) {
-            range.setStartAfter(firstDiv.firstChild);
-            range.collapse(true);
-            sel?.removeAllRanges();
-            sel?.addRange(range);
-          }
-        }
+        const today = new Date();
+        const dateString = today.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+        const defaultContent = `<h1>${dateString}</h1><p></p>`;
+        setHtml(defaultContent);
+        lastSavedContentRef.current = defaultContent;
       }, 0);
     }
   }, [entryId]);
 
   useEffect(() => {
-    if (transcript && contentRef.current) {
-      insertTextAtCursor(transcript);
+    if (transcript && editorRef.current) {
+      // @ts-ignore
+      editorRef.current.chain().focus().insertContent(transcript).run();
       reset();
     }
   }, [transcript, reset]);
@@ -81,11 +71,9 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
       }
 
       setEntry(data);
-      if (contentRef.current) {
-        const content = data.content || '<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">Untitled Entry</div><div><br></div>';
-        contentRef.current.innerHTML = content;
-        lastSavedContentRef.current = content;
-      }
+      const content = data.content || '<h1>Untitled Entry</h1><p></p>';
+      setHtml(content);
+      lastSavedContentRef.current = content;
     } catch (error) {
       console.error('Error loading entry:', error);
     }
@@ -167,11 +155,9 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   }, [entryId, user?.id, toast, onEntryCreated]);
 
   const handleSave = useCallback(() => {
-    if (contentRef.current) {
-      const htmlContent = contentRef.current.innerHTML;
-      saveEntry(htmlContent);
-    }
-  }, [saveEntry]);
+    const htmlContent = html;
+    saveEntry(htmlContent);
+  }, [saveEntry, html]);
 
   const handleDelete = async () => {
     if (!entryId || !confirm('Are you sure you want to delete this entry?')) return;
@@ -436,15 +422,18 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   return (
     <div className="space-y-4 h-full flex flex-col relative">
       <div className="flex-1">
-        <div
-          ref={contentRef}
-          contentEditable
-          suppressContentEditableWarning={true}
-          onInput={handleContentChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          className="min-h-[500px] h-full font-mono resize-none bg-white text-sm focus-visible:outline-none"
-          style={{ lineHeight: '1.5', paddingBottom: '80px' }} // Add padding for fixed button
+        <WordLikeEditor
+          value={html}
+          onChange={(val) => {
+            setHtml(val);
+            setHasUnsavedChanges(val.trim() !== lastSavedContentRef.current.trim());
+          }}
+          onReady={(editor) => {
+            // store editor instance for voice insertion
+            // @ts-ignore
+            editorRef.current = editor;
+          }}
+          className="bg-white rounded-md p-2"
         />
       </div>
 
