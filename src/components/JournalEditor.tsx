@@ -472,38 +472,53 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
         execCommand('indent');
       }
     } else if (e.key === ' ') {
-      // Check for list triggers (only in content, not title)
+      // Convert "- " or "1. " at start of a block into lists (not in title)
       if (!inTitleLine) {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
           const range = selection.getRangeAt(0);
-          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
-          
-          // Check for dash + space to convert to bullet
-          if (textBefore.endsWith('-')) {
-            e.preventDefault();
-            // Remove the dash
-            range.setStart(range.startContainer, range.startOffset - 1);
-            range.deleteContents();
-            // Insert bullet point
-            const bulletNode = document.createTextNode('• ');
-            range.insertNode(bulletNode);
-            range.setStartAfter(bulletNode);
-            range.setEndAfter(bulletNode);
-            selection.removeAllRanges();
-            selection.addRange(range);
-            setHasUnsavedChanges(true);
-          }
-          // Check for number + period + space for numbered list
-          else if (/\d+\.$/.test(textBefore)) {
-            e.preventDefault();
-            // Just add the space (keep the number format)
-            const spaceNode = document.createTextNode(' ');
-            range.insertNode(spaceNode);
-            range.setStartAfter(spaceNode);
-            range.setEndAfter(spaceNode);
-            selection.removeAllRanges();
-            selection.addRange(range);
+
+          // Find nearest block element
+          const getBlockElement = (node: Node | null): HTMLElement | null => {
+            let n: Node | null = node;
+            while (n && n !== contentRef.current) {
+              if (n.nodeType === Node.ELEMENT_NODE) {
+                const el = n as HTMLElement;
+                if (/^(DIV|P|LI)$/i.test(el.tagName)) return el;
+              }
+              n = n.parentNode;
+            }
+            return contentRef.current;
+          };
+
+          const block = getBlockElement(range.startContainer);
+          if (!block) return;
+
+          // Text from start of block to caret
+          const fromStart = document.createRange();
+          fromStart.setStart(block, 0);
+          fromStart.setEnd(range.startContainer, range.startOffset);
+          const beforeText = fromStart.toString().replace(/\u00A0/g, ' ');
+          const trimmed = beforeText.trim();
+
+          // Trigger only if marker is the first thing in the block
+          const isDashTrigger = trimmed === '-';
+          const numberMatch = trimmed.match(/^(\d+)\.$/);
+
+          if (isDashTrigger || numberMatch) {
+            e.preventDefault(); // prevent the actual space from being inserted
+
+            // Remove the marker from the DOM (from start of block to caret)
+            const del = document.createRange();
+            del.setStart(block, 0);
+            del.setEnd(range.startContainer, range.startOffset);
+            del.deleteContents();
+
+            // Toggle the appropriate list type
+            document.execCommand(isDashTrigger ? 'insertUnorderedList' : 'insertOrderedList');
+
+            // Ensure focus remains and caret is inside the new empty li
+            setTimeout(() => contentRef.current?.focus(), 0);
             setHasUnsavedChanges(true);
           }
         }
