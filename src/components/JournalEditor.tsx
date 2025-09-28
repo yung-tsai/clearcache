@@ -24,6 +24,9 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
 
+  // Track last empty LI to support double-Enter to exit list
+  const lastEmptyLIRef = useRef<HTMLLIElement | null>(null);
+
   useEffect(() => {
     if (entryId) {
       loadEntry(entryId);
@@ -164,7 +167,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     } finally {
       setLoading(false);
     }
-  }, [entryId, user?.id, toast, onEntryCreated]);
+  }, [entryId, user?.id, toast, onEntryCreated, onTitleUpdate]);
 
   const handleSave = useCallback(() => {
     if (contentRef.current) {
@@ -265,84 +268,161 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   }, []);
 
-  // Helper functions for bullet point management
-  const getCurrentLineElement = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return null;
-    
-    let node = selection.getRangeAt(0).commonAncestorContainer;
-    
-    // Find the containing div
-    while (node && node.nodeType !== Node.ELEMENT_NODE) {
-      node = node.parentNode;
-    }
-    
-    while (node && node.nodeName !== 'DIV') {
-      node = node.parentNode;
-    }
-    
-    return node as HTMLDivElement | null;
+  // Word-like list management helpers
+  const getSelection = () => window.getSelection();
+
+  const getClosest = useCallback((node: Node | null, tag: string): HTMLElement | null => {
+    let cur: Node | null = node;
+    while (cur && cur.nodeType !== Node.ELEMENT_NODE) cur = cur.parentNode;
+    let el: HTMLElement | null = (cur as HTMLElement) || null;
+    while (el && el.tagName !== tag) el = el.parentElement;
+    return el;
   }, []);
 
-  const isBulletLine = useCallback((text: string) => {
-    return /^\s*•\s/.test(text);
-  }, []);
+  const getCurrentLI = useCallback((): HTMLLIElement | null => {
+    const sel = getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    return getClosest(sel.getRangeAt(0).commonAncestorContainer, 'LI') as HTMLLIElement | null;
+  }, [getClosest]);
 
-  const getBulletIndentation = useCallback((text: string) => {
-    const match = text.match(/^(\s*)/);
-    return match ? match[1].length : 0;
-  }, []);
+  const getCurrentBlockDiv = useCallback((): HTMLDivElement | null => {
+    const sel = getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    return getClosest(sel.getRangeAt(0).commonAncestorContainer, 'DIV') as HTMLDivElement | null;
+  }, [getClosest]);
 
-  const createNewBulletPoint = useCallback((indentation: string = '') => {
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return;
+  const isInList = useCallback(() => !!getCurrentLI(), [getCurrentLI]);
 
-    const newDiv = document.createElement('div');
-    newDiv.innerHTML = indentation + '• ';
-    
-    const currentLine = getCurrentLineElement();
-    if (currentLine && currentLine.parentNode) {
-      currentLine.parentNode.insertBefore(newDiv, currentLine.nextSibling);
-      
-      // Position cursor after the bullet
-      const range = document.createRange();
-      range.setStart(newDiv, 1);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
+  const moveCursorToStart = (el: HTMLElement) => {
+    const sel = getSelection();
+    if (!sel) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    contentRef.current?.focus();
+  };
+
+  const insertParagraphAfter = (node: HTMLElement) => {
+    const para = document.createElement('div');
+    para.innerHTML = '<br>';
+    node.parentNode?.insertBefore(para, node.nextSibling);
+    moveCursorToStart(para);
+    setHasUnsavedChanges(true);
+    return para;
+  };
+
+  const insertNewLIAfter = (li: HTMLLIElement) => {
+    const newLI = document.createElement('li');
+    newLI.innerHTML = '<br>';
+    li.parentElement?.insertBefore(newLI, li.nextSibling);
+    moveCursorToStart(newLI);
+    setHasUnsavedChanges(true);
+    return newLI;
+  };
+
+  const cleanupEmptyUL = (ul: HTMLUListElement) => {
+    if (ul && ul.children.length === 0) {
+      ul.parentElement?.removeChild(ul);
     }
-  }, [getCurrentLineElement]);
+  };
 
-  const convertToNormalParagraph = useCallback(() => {
-    const currentLine = getCurrentLineElement();
-    if (!currentLine) return;
+  const exitListToParagraph = (li: HTMLLIElement) => {
+    const ul = li.parentElement as HTMLUListElement | null;
+    if (!ul) return;
 
-    currentLine.innerHTML = '<br>';
-    
-    // Position cursor at start
-    const selection = window.getSelection();
-    if (selection) {
-      const range = document.createRange();
-      range.setStart(currentLine, 0);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
+    // Move following siblings into a new UL to split the list
+    const following = [] as HTMLLIElement[];
+    let sib = li.nextElementSibling as HTMLLIElement | null;
+    while (sib) {
+      const next = sib.nextElementSibling as HTMLLIElement | null;
+      following.push(sib);
+      sib = next;
     }
-  }, [getCurrentLineElement]);
 
-  // Track consecutive empty bullet enters for double-enter detection
-  const lastEmptyBulletRef = useRef<HTMLDivElement | null>(null);
+    // Remove current LI from UL
+    ul.removeChild(li);
+
+    // Insert paragraph after current UL
+    const para = insertParagraphAfter(ul);
+
+    // If there are following items, create a new UL after paragraph and append them
+    if (following.length) {
+      const newUL = document.createElement('ul');
+      following.forEach((liNode) => newUL.appendChild(liNode));
+      para.parentNode?.insertBefore(newUL, para.nextSibling);
+    }
+
+    // Clean up original UL if empty
+    cleanupEmptyUL(ul);
+
+    lastEmptyLIRef.current = null;
+    moveCursorToStart(para);
+    setHasUnsavedChanges(true);
+  };
+
+  const indentLI = (li: HTMLLIElement) => {
+    const prev = li.previousElementSibling as HTMLLIElement | null;
+    if (!prev) return; // can't indent first item
+    let subUL = Array.from(prev.children).find((c) => (c as HTMLElement).tagName === 'UL') as HTMLUListElement | undefined;
+    if (!subUL) {
+      subUL = document.createElement('ul');
+      prev.appendChild(subUL);
+    }
+    li.parentElement?.removeChild(li);
+    subUL.appendChild(li);
+    moveCursorToStart(li);
+    setHasUnsavedChanges(true);
+  };
+
+  const outdentLI = (li: HTMLLIElement) => {
+    const parentUL = li.parentElement as HTMLUListElement | null;
+    const parentLI = parentUL?.parentElement as HTMLLIElement | null;
+    if (!parentUL || !parentLI) return; // already top-level
+    const grandUL = parentLI.parentElement as HTMLUListElement | null;
+    parentUL.removeChild(li);
+    grandUL?.insertBefore(li, parentLI.nextSibling);
+    cleanupEmptyUL(parentUL);
+    moveCursorToStart(li);
+    setHasUnsavedChanges(true);
+  };
+
+  const getTextBeforeCursorInNode = (node: HTMLElement) => {
+    const sel = getSelection();
+    if (!sel || !sel.rangeCount) return '';
+    const range = sel.getRangeAt(0);
+    const tmp = document.createRange();
+    tmp.selectNodeContents(node);
+    tmp.setEnd(range.startContainer, range.startOffset);
+    return tmp.toString();
+  };
+
+  const convertDashLineToList = () => {
+    const block = getCurrentBlockDiv();
+    if (!block) return;
+    const before = getTextBeforeCursorInNode(block);
+    if (/^\s*-$/.test(before)) {
+      const ul = document.createElement('ul');
+      const li = document.createElement('li');
+      li.innerHTML = '<br>';
+      ul.appendChild(li);
+      block.parentElement?.replaceChild(ul, block);
+      moveCursorToStart(li);
+      setHasUnsavedChanges(true);
+    }
+  };
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const inTitleLine = isInTitleLine();
-    
+
     if (e.ctrlKey || e.metaKey) {
       // Prevent formatting commands on title line
       if (inTitleLine && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
         e.preventDefault();
         return;
       }
-      
+
       switch (e.key.toLowerCase()) {
         case 'b':
           e.preventDefault();
@@ -363,148 +443,80 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
           }
           break;
       }
-    } else if (e.key === 'Enter') {
-      if (inTitleLine) {
-        // Handle Enter key in title line - create new normal paragraph
-        e.preventDefault();
-        
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          // Create new div for content (normal formatting)
-          const newDiv = document.createElement('div');
-          newDiv.innerHTML = '<br>';
-          
-          // Insert after the title div
-          const firstDiv = contentRef.current?.querySelector('div');
-          if (firstDiv && firstDiv.nextSibling) {
-            contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
-          } else if (firstDiv) {
-            contentRef.current?.appendChild(newDiv);
-          }
-          
-          // Position cursor in the new div
-          const newRange = document.createRange();
-          newRange.setStart(newDiv, 0);
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-          
-          // Trigger content change
-          setHasUnsavedChanges(true);
-        }
-      } else {
-        // Handle Enter in content area
-        const currentLine = getCurrentLineElement();
-        const lineText = currentLine?.textContent || '';
-        
-        if (isBulletLine(lineText)) {
-          e.preventDefault();
-          
-          // Check if bullet line has content after the bullet
-          const bulletMatch = lineText.match(/^\s*•\s+(.*)/);
-          const hasContent = bulletMatch && bulletMatch[1].trim().length > 0;
-          
-          if (hasContent) {
-            // Has content - create new bullet point with same indentation
-            const indentation = ' '.repeat(getBulletIndentation(lineText));
-            createNewBulletPoint(indentation);
-            lastEmptyBulletRef.current = null; // Reset empty bullet tracking
-          } else {
-            // Empty bullet point
-            if (lastEmptyBulletRef.current === currentLine) {
-              // Second Enter on same empty bullet - convert to normal paragraph
-              convertToNormalParagraph();
-              lastEmptyBulletRef.current = null;
-            } else {
-              // First Enter on empty bullet - create normal paragraph but track this bullet
-              const newDiv = document.createElement('div');
-              newDiv.innerHTML = '<br>';
-              
-              if (currentLine && currentLine.parentNode) {
-                currentLine.parentNode.insertBefore(newDiv, currentLine.nextSibling);
-                
-                // Position cursor in new paragraph
-                const selection = window.getSelection();
-                if (selection) {
-                  const range = document.createRange();
-                  range.setStart(newDiv, 0);
-                  range.collapse(true);
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-                }
-              }
-              lastEmptyBulletRef.current = currentLine;
-            }
-          }
-        } else {
-          // Reset empty bullet tracking for non-bullet lines
-          lastEmptyBulletRef.current = null;
-        }
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      const currentLine = getCurrentLineElement();
-      const lineText = currentLine?.textContent || '';
-      
-      if (isBulletLine(lineText)) {
-        // Handle tab in bullet points - increase indentation
-        if (e.shiftKey) {
-          // Shift+Tab - decrease indentation
-          const currentIndentation = getBulletIndentation(lineText);
-          if (currentIndentation > 0) {
-            const newIndentation = Math.max(0, currentIndentation - 2);
-            const newText = ' '.repeat(newIndentation) + lineText.trimStart();
-            if (currentLine) {
-              currentLine.textContent = newText;
-            }
-          }
-        } else {
-          // Tab - increase indentation
-          const currentIndentation = getBulletIndentation(lineText);
-          const newIndentation = currentIndentation + 2;
-          const newText = ' '.repeat(newIndentation) + lineText.trimStart();
-          if (currentLine) {
-            currentLine.textContent = newText;
-          }
-        }
-      } else {
-        // Standard tab behavior for non-bullet lines
-        execCommand(e.shiftKey ? 'outdent' : 'indent');
-      }
-    } else if (e.key === ' ') {
-      // Smart dash to bullet conversion - only at start of line
-      if (!inTitleLine) {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          const currentLine = getCurrentLineElement();
-          const lineText = currentLine?.textContent || '';
-          
-          // Only convert if we're at the start of the line (after optional whitespace) and it ends with a dash
-          const beforeCursor = lineText.slice(0, range.startOffset);
-          if (/^\s*-$/.test(beforeCursor)) {
-            e.preventDefault();
-            
-            // Replace the dash with a bullet
-            const indentation = beforeCursor.replace(/-$/, '');
-            if (currentLine) {
-              currentLine.textContent = indentation + '• ';
-              
-              // Position cursor after bullet
-              const newRange = document.createRange();
-              newRange.setStart(currentLine, 1);
-              newRange.collapse(true);
-              selection.removeAllRanges();
-              selection.addRange(newRange);
-            }
-          }
-        }
-      }
-    } else {
-      // Reset empty bullet tracking for other keys
-      lastEmptyBulletRef.current = null;
+      return;
     }
-  }, [isInTitleLine, execCommand, getCurrentLineElement, isBulletLine, getBulletIndentation, createNewBulletPoint, convertToNormalParagraph]);
+
+    if (e.key === 'Enter') {
+      if (inTitleLine) {
+        // Create a new normal paragraph right after the title
+        e.preventDefault();
+        const firstDiv = contentRef.current?.querySelector('div');
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = '<br>';
+        if (firstDiv && firstDiv.nextSibling) {
+          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
+        } else if (firstDiv) {
+          contentRef.current?.appendChild(newDiv);
+        }
+        moveCursorToStart(newDiv);
+        setHasUnsavedChanges(true);
+        return;
+      }
+
+      const currentLI = getCurrentLI();
+      if (currentLI) {
+        e.preventDefault();
+        const hasContent = (currentLI.textContent || '').trim().length > 0;
+        if (hasContent) {
+          // Enter on non-empty bullet -> continue with another bullet
+          const newLI = insertNewLIAfter(currentLI);
+          lastEmptyLIRef.current = newLI; // next Enter on empty should exit
+        } else {
+          // Enter on empty bullet
+          if (lastEmptyLIRef.current === currentLI) {
+            // Double Enter on empty bullet -> exit to normal paragraph
+            exitListToParagraph(currentLI);
+          } else {
+            // First Enter on empty bullet -> keep it, track for next Enter
+            lastEmptyLIRef.current = currentLI;
+          }
+        }
+        return;
+      }
+
+      // Not in a list: reset tracking and allow default
+      lastEmptyLIRef.current = null;
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      const currentLI = getCurrentLI();
+      if (currentLI) {
+        e.preventDefault();
+        if (e.shiftKey) outdentLI(currentLI);
+        else indentLI(currentLI);
+      }
+      return;
+    }
+
+    if (e.key === ' ') {
+      // Only convert dash to bullet at line start and not in title or existing list
+      if (!inTitleLine && !isInList()) {
+        const block = getCurrentBlockDiv();
+        if (block) {
+          const before = getTextBeforeCursorInNode(block);
+          if (/^\s*-$/.test(before)) {
+            e.preventDefault();
+            convertDashLineToList();
+            return;
+          }
+        }
+      }
+    }
+
+    // Any other key resets double-enter tracking
+    lastEmptyLIRef.current = null;
+  }, [isInTitleLine, execCommand, getCurrentLI, getCurrentBlockDiv, isInList]);
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
