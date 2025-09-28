@@ -413,6 +413,29 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   };
 
+  // Fallback conversion after input: if a block starts with "- ", turn it into a list item
+  const convertBlockStartingWithDashToList = () => {
+    const block = getCurrentBlockDiv();
+    if (!block || isInList()) return;
+    // Read visible text (innerText handles BR correctly)
+    const text = (block.innerText || '').replace(/\u00A0/g, ' ');
+    const match = text.match(/^\s*-\s(.*)$/);
+    if (match) {
+      const remainder = match[1] ?? '';
+      const ul = document.createElement('ul');
+      const li = document.createElement('li');
+      if (remainder.length) {
+        li.textContent = remainder;
+      } else {
+        li.innerHTML = '<br>';
+      }
+      ul.appendChild(li);
+      block.parentElement?.replaceChild(ul, block);
+      moveCursorToStart(li);
+      setHasUnsavedChanges(true);
+    }
+  };
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const inTitleLine = isInTitleLine();
 
@@ -520,8 +543,9 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
+    convertBlockStartingWithDashToList();
     setHasUnsavedChanges(true);
-  }, [ensureTitleFormatting]);
+  }, [ensureTitleFormatting, convertBlockStartingWithDashToList]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
