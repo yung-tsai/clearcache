@@ -265,8 +265,57 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   }, []);
 
+  const isInList = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return false;
+    
+    let node = selection.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== contentRef.current) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        if (element.tagName === 'LI') return true;
+      }
+      node = node.parentNode;
+    }
+    return false;
+  }, []);
+
+  const getCurrentListItem = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return null;
+    
+    let node = selection.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== contentRef.current) {
+      if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === 'LI') {
+        return node as HTMLLIElement;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }, []);
+
+  const isEmptyListItem = useCallback((li: HTMLLIElement) => {
+    const text = li.textContent?.trim() || '';
+    return text === '' || text === '\n';
+  }, []);
+
+  const toggleBulletList = useCallback(() => {
+    if (isInTitleLine()) return;
+    
+    if (isInList()) {
+      // Remove list formatting
+      document.execCommand('insertUnorderedList', false);
+    } else {
+      // Add list formatting
+      document.execCommand('insertUnorderedList', false);
+    }
+    contentRef.current?.focus();
+  }, [isInTitleLine, isInList]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const inTitleLine = isInTitleLine();
+    const inList = isInList();
+    const currentListItem = getCurrentListItem();
     
     if (e.ctrlKey || e.metaKey) {
       // Prevent formatting commands on title line
@@ -294,64 +343,84 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
             execCommand('strikeThrough');
           }
           break;
+        case '8':
+          if (e.shiftKey) {
+            e.preventDefault();
+            toggleBulletList();
+          }
+          break;
       }
-    } else if (e.key === 'Enter' && inTitleLine) {
-      // Handle Enter key in title line - create new normal paragraph
-      e.preventDefault();
-      
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
+    } else if (e.key === 'Enter') {
+      if (inTitleLine) {
+        // Handle Enter key in title line - create new normal paragraph
+        e.preventDefault();
         
-        // Create new div for content (normal formatting)
-        const newDiv = document.createElement('div');
-        newDiv.innerHTML = '<br>';
-        
-        // Insert after the title div
-        const firstDiv = contentRef.current?.querySelector('div');
-        if (firstDiv && firstDiv.nextSibling) {
-          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
-        } else if (firstDiv) {
-          contentRef.current?.appendChild(newDiv);
-        }
-        
-        // Position cursor in the new div
-        const newRange = document.createRange();
-        newRange.setStart(newDiv, 0);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        
-        // Trigger content change
-        setHasUnsavedChanges(true);
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      execCommand('indent');
-    } else if (e.key === ' ') {
-      // Check for dash + space to convert to bullet (only in content, not title)
-      if (!inTitleLine) {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
           const range = selection.getRangeAt(0);
-          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
-          if (textBefore.endsWith('-')) {
-            e.preventDefault();
-            // Remove the dash
-            range.setStart(range.startContainer, range.startOffset - 1);
-            range.deleteContents();
-            // Insert bullet point
-            const bulletNode = document.createTextNode('• ');
-            range.insertNode(bulletNode);
-            range.setStartAfter(bulletNode);
-            range.setEndAfter(bulletNode);
+          
+          // Create new div for content (normal formatting)
+          const newDiv = document.createElement('div');
+          newDiv.innerHTML = '<br>';
+          
+          // Insert after the title div
+          const firstDiv = contentRef.current?.querySelector('div');
+          if (firstDiv && firstDiv.nextSibling) {
+            contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
+          } else if (firstDiv) {
+            contentRef.current?.appendChild(newDiv);
+          }
+          
+          // Position cursor in the new div
+          const newRange = document.createRange();
+          newRange.setStart(newDiv, 0);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+          
+          // Trigger content change
+          setHasUnsavedChanges(true);
+        }
+      } else if (inList && currentListItem) {
+        // Handle Enter in list
+        if (isEmptyListItem(currentListItem)) {
+          // Double enter or empty item - exit list
+          e.preventDefault();
+          document.execCommand('insertUnorderedList', false);
+          
+          // Create a new paragraph
+          const newDiv = document.createElement('div');
+          newDiv.innerHTML = '<br>';
+          currentListItem.parentElement?.parentNode?.insertBefore(newDiv, currentListItem.parentElement.nextSibling);
+          
+          // Position cursor in new paragraph
+          const selection = window.getSelection();
+          if (selection) {
+            const range = document.createRange();
+            range.setStart(newDiv, 0);
+            range.collapse(true);
             selection.removeAllRanges();
             selection.addRange(range);
           }
         }
+        // For non-empty list items, let browser handle normal list continuation
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      if (inList) {
+        if (e.shiftKey) {
+          // Shift+Tab: outdent
+          document.execCommand('outdent', false);
+        } else {
+          // Tab: indent
+          document.execCommand('indent', false);
+        }
+      } else {
+        // Normal tab behavior outside lists
+        execCommand('indent');
       }
     }
-  }, [isInTitleLine, execCommand]);
+  }, [isInTitleLine, isInList, getCurrentListItem, isEmptyListItem, toggleBulletList, execCommand]);
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
