@@ -33,7 +33,7 @@ const OrderedListNoInputRules = OrderedList.extend({
 const WordLikeListKeymap = Extension.create({
   name: 'wordLikeListKeymap',
   addProseMirrorPlugins() {
-    // Access editor instance via this.editor
+    const editor = this.editor;
     return [
       keymap({
         Tab: (state, dispatch, view) => {
@@ -44,9 +44,23 @@ const WordLikeListKeymap = Extension.create({
           const li = state.schema.nodes.listItem;
           return liftListItem(li)(state, dispatch, view);
         },
+        Enter: (state, dispatch, view) => {
+          const { $from } = state.selection;
+          const liType = state.schema.nodes.listItem;
+          const inListItem = $from.parent.type === liType;
+          if (!inListItem) return false;
+
+          const isEmptyItem = $from.parent.content.size === 0;
+          if (isEmptyItem) {
+            // Exit the list when pressing Enter on empty item
+            return liftListItem(liType)(state, dispatch, view);
+          }
+
+          // Otherwise split to a new list item (continue list)
+          return editor.commands.splitListItem('listItem');
+        },
         'Shift-Enter': () => {
-          // @ts-ignore - TipTap command
-          return (this as any)?.editor?.commands.setHardBreak() || false;
+          return editor.commands.setHardBreak();
         },
       }),
     ];
