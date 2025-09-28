@@ -4,8 +4,8 @@ import StarterKit from '@tiptap/starter-kit';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
-import History from '@tiptap/extension-history';
-import HardBreak from '@tiptap/extension-hard-break';
+// import History from '@tiptap/extension-history';
+// import HardBreak from '@tiptap/extension-hard-break';
 import { keymap } from 'prosemirror-keymap';
 import { sinkListItem, liftListItem } from 'prosemirror-schema-list';
 import { Button } from '@/components/ui/button';
@@ -73,12 +73,11 @@ export default function WordLikeEditor({ value, onChange, onReady, className }: 
       StarterKit.configure({
         bulletList: false,
         orderedList: false,
+        hardBreak: { keepMarks: true },
       }),
       BulletListNoInputRules,
       OrderedListNoInputRules,
       ListItem,
-      History,
-      HardBreak.configure({ keepMarks: true }),
       WordLikeListKeymap,
     ],
     content: value || '<p></p>',
