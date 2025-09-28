@@ -477,37 +477,34 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
           const range = selection.getRangeAt(0);
-          const containerText = range.startContainer.textContent || '';
-          const textBefore = containerText.slice(0, range.startOffset);
+          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
           
-          // Unordered list trigger: "- "
+          // Check for dash + space to convert to bullet
           if (textBefore.endsWith('-')) {
             e.preventDefault();
             // Remove the dash
-            const start = range.startOffset - 1;
-            range.setStart(range.startContainer, start);
+            range.setStart(range.startContainer, range.startOffset - 1);
             range.deleteContents();
-
-            // Convert current block into an unordered list
-            document.execCommand('insertUnorderedList');
-            contentRef.current?.focus();
+            // Insert bullet point
+            const bulletNode = document.createTextNode('• ');
+            range.insertNode(bulletNode);
+            range.setStartAfter(bulletNode);
+            range.setEndAfter(bulletNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
             setHasUnsavedChanges(true);
-          } else {
-            // Ordered list trigger: "1. " (or any number)
-            const match = textBefore.match(/(\d+)\.$/);
-            if (match) {
-              e.preventDefault();
-              // Remove the number and the period
-              const markerLength = match[0].length;
-              const start = range.startOffset - markerLength;
-              range.setStart(range.startContainer, start);
-              range.deleteContents();
-
-              // Convert current block into an ordered list
-              document.execCommand('insertOrderedList');
-              contentRef.current?.focus();
-              setHasUnsavedChanges(true);
-            }
+          }
+          // Check for number + period + space for numbered list
+          else if (/\d+\.$/.test(textBefore)) {
+            e.preventDefault();
+            // Just add the space (keep the number format)
+            const spaceNode = document.createTextNode(' ');
+            range.insertNode(spaceNode);
+            range.setStartAfter(spaceNode);
+            range.setEndAfter(spaceNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            setHasUnsavedChanges(true);
           }
         }
       }
