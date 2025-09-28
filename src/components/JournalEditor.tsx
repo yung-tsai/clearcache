@@ -265,8 +265,50 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   }, []);
 
+  const isInBulletLine = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return false;
+    
+    const range = selection.getRangeAt(0);
+    const container = range.startContainer;
+    const text = container.textContent || '';
+    
+    // Check if current line starts with bullet or number
+    const lineStart = text.lastIndexOf('\n', range.startOffset - 1) + 1;
+    const lineText = text.slice(lineStart);
+    
+    return /^(\s*)(•|\d+\.)\s/.test(lineText);
+  }, []);
+
+  const getCurrentLineInfo = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return null;
+    
+    const range = selection.getRangeAt(0);
+    const container = range.startContainer;
+    const text = container.textContent || '';
+    
+    const lineStart = text.lastIndexOf('\n', range.startOffset - 1) + 1;
+    const lineEnd = text.indexOf('\n', range.startOffset);
+    const lineText = text.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+    
+    const bulletMatch = lineText.match(/^(\s*)(•|\d+\.)\s(.*)$/);
+    if (bulletMatch) {
+      return {
+        indent: bulletMatch[1],
+        marker: bulletMatch[2],
+        content: bulletMatch[3],
+        lineStart,
+        lineEnd: lineEnd === -1 ? text.length : lineEnd
+      };
+    }
+    
+    return null;
+  }, []);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const inTitleLine = isInTitleLine();
+    const inBulletLine = isInBulletLine();
     
     if (e.ctrlKey || e.metaKey) {
       // Prevent formatting commands on title line
@@ -295,46 +337,149 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
           }
           break;
       }
-    } else if (e.key === 'Enter' && inTitleLine) {
-      // Handle Enter key in title line - create new normal paragraph
-      e.preventDefault();
-      
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
+    } else if (e.key === 'Enter') {
+      if (inTitleLine) {
+        // Handle Enter key in title line - create new normal paragraph
+        e.preventDefault();
+        
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          
+          // Create new div for content (normal formatting)
+          const newDiv = document.createElement('div');
+          newDiv.innerHTML = '<br>';
+          
+          // Insert after the title div
+          const firstDiv = contentRef.current?.querySelector('div');
+          if (firstDiv && firstDiv.nextSibling) {
+            contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
+          } else if (firstDiv) {
+            contentRef.current?.appendChild(newDiv);
+          }
+          
+          // Position cursor in the new div
+          const newRange = document.createRange();
+          newRange.setStart(newDiv, 0);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+          
+          // Trigger content change
+          setHasUnsavedChanges(true);
+        }
+      } else if (inBulletLine) {
+        // Handle Enter in bullet line
+        e.preventDefault();
+        
+        const lineInfo = getCurrentLineInfo();
+        if (!lineInfo) return;
+        
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) return;
+        
         const range = selection.getRangeAt(0);
+        const container = range.startContainer;
         
-        // Create new div for content (normal formatting)
-        const newDiv = document.createElement('div');
-        newDiv.innerHTML = '<br>';
-        
-        // Insert after the title div
-        const firstDiv = contentRef.current?.querySelector('div');
-        if (firstDiv && firstDiv.nextSibling) {
-          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
-        } else if (firstDiv) {
-          contentRef.current?.appendChild(newDiv);
+        if (lineInfo.content.trim() === '') {
+          // Empty bullet line - exit the list
+          const text = container.textContent || '';
+          const beforeLine = text.slice(0, lineInfo.lineStart);
+          const afterLine = text.slice(lineInfo.lineEnd);
+          
+          // Replace the empty bullet line with a regular line break
+          if (container.nodeType === Node.TEXT_NODE) {
+            container.textContent = beforeLine + '\n' + afterLine;
+            
+            // Position cursor at the start of the new line
+            const newRange = document.createRange();
+            newRange.setStart(container, beforeLine.length + 1);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          }
+        } else {
+          // Continue the list with a new bullet
+          let newMarker;
+          if (lineInfo.marker === '•') {
+            newMarker = '•';
+          } else {
+            // Numbered list - increment the number
+            const currentNum = parseInt(lineInfo.marker.replace('.', ''));
+            newMarker = `${currentNum + 1}.`;
+          }
+          
+          const newLineText = `\n${lineInfo.indent}${newMarker} `;
+          
+          // Insert the new bullet line
+          if (container.nodeType === Node.TEXT_NODE) {
+            const text = container.textContent || '';
+            const cursorPos = range.startOffset;
+            const beforeCursor = text.slice(0, cursorPos);
+            const afterCursor = text.slice(cursorPos);
+            
+            container.textContent = beforeCursor + newLineText + afterCursor;
+            
+            // Position cursor after the new bullet marker
+            const newRange = document.createRange();
+            newRange.setStart(container, cursorPos + newLineText.length);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          }
         }
         
-        // Position cursor in the new div
-        const newRange = document.createRange();
-        newRange.setStart(newDiv, 0);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        
-        // Trigger content change
         setHasUnsavedChanges(true);
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      execCommand('indent');
+      
+      if (inBulletLine) {
+        // Handle indentation for bullet lists
+        const lineInfo = getCurrentLineInfo();
+        if (!lineInfo) return;
+        
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount) return;
+        
+        const range = selection.getRangeAt(0);
+        const container = range.startContainer;
+        
+        if (container.nodeType === Node.TEXT_NODE) {
+          const text = container.textContent || '';
+          const newIndent = e.shiftKey 
+            ? lineInfo.indent.slice(0, -2) // Remove 2 spaces for outdent
+            : lineInfo.indent + '  '; // Add 2 spaces for indent
+          
+          const beforeLine = text.slice(0, lineInfo.lineStart);
+          const afterLine = text.slice(lineInfo.lineEnd);
+          const newLine = `${newIndent}${lineInfo.marker} ${lineInfo.content}`;
+          
+          container.textContent = beforeLine + newLine + afterLine;
+          
+          // Maintain cursor position relative to content
+          const newRange = document.createRange();
+          const cursorOffset = range.startOffset - lineInfo.lineStart;
+          const newCursorPos = beforeLine.length + Math.max(0, cursorOffset + (newIndent.length - lineInfo.indent.length));
+          newRange.setStart(container, newCursorPos);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+          
+          setHasUnsavedChanges(true);
+        }
+      } else {
+        execCommand('indent');
+      }
     } else if (e.key === ' ') {
-      // Check for dash + space to convert to bullet (only in content, not title)
+      // Check for list triggers (only in content, not title)
       if (!inTitleLine) {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
           const range = selection.getRangeAt(0);
           const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
+          
+          // Check for dash + space to convert to bullet
           if (textBefore.endsWith('-')) {
             e.preventDefault();
             // Remove the dash
@@ -347,11 +492,24 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
             range.setEndAfter(bulletNode);
             selection.removeAllRanges();
             selection.addRange(range);
+            setHasUnsavedChanges(true);
+          }
+          // Check for number + period + space for numbered list
+          else if (/\d+\.$/.test(textBefore)) {
+            e.preventDefault();
+            // Just add the space (keep the number format)
+            const spaceNode = document.createTextNode(' ');
+            range.insertNode(spaceNode);
+            range.setStartAfter(spaceNode);
+            range.setEndAfter(spaceNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            setHasUnsavedChanges(true);
           }
         }
       }
     }
-  }, [isInTitleLine, execCommand]);
+  }, [isInTitleLine, isInBulletLine, getCurrentLineInfo, execCommand]);
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
