@@ -265,50 +265,8 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   }, []);
 
-  const isInBulletLine = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return false;
-    
-    const range = selection.getRangeAt(0);
-    const container = range.startContainer;
-    const text = container.textContent || '';
-    
-    // Check if current line starts with bullet or number
-    const lineStart = text.lastIndexOf('\n', range.startOffset - 1) + 1;
-    const lineText = text.slice(lineStart);
-    
-    return /^(\s*)(•|\d+\.)\s/.test(lineText);
-  }, []);
-
-  const getCurrentLineInfo = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return null;
-    
-    const range = selection.getRangeAt(0);
-    const container = range.startContainer;
-    const text = container.textContent || '';
-    
-    const lineStart = text.lastIndexOf('\n', range.startOffset - 1) + 1;
-    const lineEnd = text.indexOf('\n', range.startOffset);
-    const lineText = text.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
-    
-    const bulletMatch = lineText.match(/^(\s*)(•|\d+\.)\s(.*)$/);
-    if (bulletMatch) {
-      return {
-        indent: bulletMatch[1],
-        marker: bulletMatch[2],
-        content: bulletMatch[3],
-        lineStart,
-        lineEnd: lineEnd === -1 ? text.length : lineEnd
-      };
-    }
-    
-    return null;
-  }, []);
-
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     const inTitleLine = isInTitleLine();
-    const inBulletLine = isInBulletLine();
     
     if (e.ctrlKey || e.metaKey) {
       // Prevent formatting commands on title line
@@ -337,207 +295,63 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
           }
           break;
       }
-    } else if (e.key === 'Enter') {
-      if (inTitleLine) {
-        // Handle Enter key in title line - create new normal paragraph
-        e.preventDefault();
-        
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          
-          // Create new div for content (normal formatting)
-          const newDiv = document.createElement('div');
-          newDiv.innerHTML = '<br>';
-          
-          // Insert after the title div
-          const firstDiv = contentRef.current?.querySelector('div');
-          if (firstDiv && firstDiv.nextSibling) {
-            contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
-          } else if (firstDiv) {
-            contentRef.current?.appendChild(newDiv);
-          }
-          
-          // Position cursor in the new div
-          const newRange = document.createRange();
-          newRange.setStart(newDiv, 0);
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-          
-          // Trigger content change
-          setHasUnsavedChanges(true);
-        }
-      } else if (inBulletLine) {
-        // Handle Enter in bullet line
-        e.preventDefault();
-        
-        const lineInfo = getCurrentLineInfo();
-        if (!lineInfo) return;
-        
-        const selection = window.getSelection();
-        if (!selection || !selection.rangeCount) return;
-        
+    } else if (e.key === 'Enter' && inTitleLine) {
+      // Handle Enter key in title line - create new normal paragraph
+      e.preventDefault();
+      
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        const container = range.startContainer;
         
-        if (lineInfo.content.trim() === '') {
-          // Empty bullet line - exit the list
-          const text = container.textContent || '';
-          const beforeLine = text.slice(0, lineInfo.lineStart);
-          const afterLine = text.slice(lineInfo.lineEnd);
-          
-          // Replace the empty bullet line with a regular line break
-          if (container.nodeType === Node.TEXT_NODE) {
-            container.textContent = beforeLine + '\n' + afterLine;
-            
-            // Position cursor at the start of the new line
-            const newRange = document.createRange();
-            newRange.setStart(container, beforeLine.length + 1);
-            newRange.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-          }
-        } else {
-          // Continue the list with a new bullet
-          let newMarker;
-          if (lineInfo.marker === '•') {
-            newMarker = '•';
-          } else {
-            // Numbered list - increment the number
-            const currentNum = parseInt(lineInfo.marker.replace('.', ''));
-            newMarker = `${currentNum + 1}.`;
-          }
-          
-          const newLineText = `\n${lineInfo.indent}${newMarker} `;
-          
-          // Insert the new bullet line
-          if (container.nodeType === Node.TEXT_NODE) {
-            const text = container.textContent || '';
-            const cursorPos = range.startOffset;
-            const beforeCursor = text.slice(0, cursorPos);
-            const afterCursor = text.slice(cursorPos);
-            
-            container.textContent = beforeCursor + newLineText + afterCursor;
-            
-            // Position cursor after the new bullet marker
-            const newRange = document.createRange();
-            newRange.setStart(container, cursorPos + newLineText.length);
-            newRange.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-          }
+        // Create new div for content (normal formatting)
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = '<br>';
+        
+        // Insert after the title div
+        const firstDiv = contentRef.current?.querySelector('div');
+        if (firstDiv && firstDiv.nextSibling) {
+          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
+        } else if (firstDiv) {
+          contentRef.current?.appendChild(newDiv);
         }
         
+        // Position cursor in the new div
+        const newRange = document.createRange();
+        newRange.setStart(newDiv, 0);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        
+        // Trigger content change
         setHasUnsavedChanges(true);
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      
-      if (inBulletLine) {
-        // Handle indentation for bullet lists
-        const lineInfo = getCurrentLineInfo();
-        if (!lineInfo) return;
-        
-        const selection = window.getSelection();
-        if (!selection || !selection.rangeCount) return;
-        
-        const range = selection.getRangeAt(0);
-        const container = range.startContainer;
-        
-        if (container.nodeType === Node.TEXT_NODE) {
-          const text = container.textContent || '';
-          const newIndent = e.shiftKey 
-            ? lineInfo.indent.slice(0, -2) // Remove 2 spaces for outdent
-            : lineInfo.indent + '  '; // Add 2 spaces for indent
-          
-          const beforeLine = text.slice(0, lineInfo.lineStart);
-          const afterLine = text.slice(lineInfo.lineEnd);
-          const newLine = `${newIndent}${lineInfo.marker} ${lineInfo.content}`;
-          
-          container.textContent = beforeLine + newLine + afterLine;
-          
-          // Maintain cursor position relative to content
-          const newRange = document.createRange();
-          const cursorOffset = range.startOffset - lineInfo.lineStart;
-          const newCursorPos = beforeLine.length + Math.max(0, cursorOffset + (newIndent.length - lineInfo.indent.length));
-          newRange.setStart(container, newCursorPos);
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-          
-          setHasUnsavedChanges(true);
-        }
-      } else {
-        execCommand('indent');
-      }
+      execCommand('indent');
     } else if (e.key === ' ') {
-      // Convert "- " or "1. " at start of a block into real lists (not in title)
+      // Check for dash + space to convert to bullet (only in content, not title)
       if (!inTitleLine) {
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
           const range = selection.getRangeAt(0);
-
-          // Find nearest block element
-          const getBlockElement = (node: Node | null): HTMLElement | null => {
-            let n: Node | null = node;
-            while (n && n !== contentRef.current) {
-              if (n.nodeType === Node.ELEMENT_NODE) {
-                const el = n as HTMLElement;
-                if (/^(DIV|P|LI)$/i.test(el.tagName)) return el;
-              }
-              n = n.parentNode;
-            }
-            return null; // don't fallback to editor root to avoid large deletions
-          };
-
-          const block = getBlockElement(range.startContainer);
-          if (!block) return;
-
-          // Text from start of block to caret
-          const fromStart = document.createRange();
-          fromStart.setStart(block, 0);
-          fromStart.setEnd(range.startContainer, range.startOffset);
-          const beforeText = fromStart.toString().replace(/\u00A0/g, ' ');
-          const trimmed = beforeText.trim();
-
-          const isDashTrigger = trimmed === '-';
-          const numberMatch = trimmed.match(/^(\d+)\.$/);
-
-          if (isDashTrigger || numberMatch) {
+          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
+          if (textBefore.endsWith('-')) {
             e.preventDefault();
-
-            // Toggle list first so browser creates a proper <ul>/<ol><li>
-            document.execCommand(isDashTrigger ? 'insertUnorderedList' : 'insertOrderedList');
-
-            // Clean the typed marker from the new <li>
-            requestAnimationFrame(() => {
-              const sel = window.getSelection();
-              if (!sel || !sel.anchorNode) return;
-              let n: Node | null = sel.anchorNode;
-              while (n && (n as HTMLElement) !== contentRef.current && (n as HTMLElement).nodeType === 1 && (n as HTMLElement).tagName !== 'LI') {
-                n = n.parentNode;
-              }
-              if (n && (n as HTMLElement).tagName === 'LI') {
-                const li = n as HTMLLIElement;
-                // Remove leading markers like '-' or '1.' and optional spaces
-                li.innerHTML = li.innerHTML.replace(/^\s*(?:-|(\d+)\.)\s*/, '');
-                // Place caret at start of li content
-                const r = document.createRange();
-                r.selectNodeContents(li);
-                r.collapse(true);
-                const s = window.getSelection();
-                s?.removeAllRanges();
-                s?.addRange(r);
-              }
-            });
-
-            setHasUnsavedChanges(true);
+            // Remove the dash
+            range.setStart(range.startContainer, range.startOffset - 1);
+            range.deleteContents();
+            // Insert bullet point
+            const bulletNode = document.createTextNode('• ');
+            range.insertNode(bulletNode);
+            range.setStartAfter(bulletNode);
+            range.setEndAfter(bulletNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
           }
         }
       }
     }
-  }, [isInTitleLine, isInBulletLine, getCurrentLineInfo, execCommand]);
+  }, [isInTitleLine, execCommand]);
 
   const handleContentChange = useCallback(() => {
     ensureTitleFormatting();
