@@ -6,6 +6,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
 import { Mic, MicOff, Trash2, Save } from 'lucide-react';
+import {
+  LexicalComposer,
+} from '@lexical/react/LexicalComposer';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import {
+  TRANSFORMERS,
+  $convertToMarkdownString,
+  $convertFromMarkdownString,
+} from '@lexical/markdown';
+import { $getRoot, $createParagraphNode, $insertNodes, $createTextNode } from 'lexical';
+
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { ListItemNode, ListNode } from '@lexical/list';
+
+function EditorErrorBoundary({ children, onError }: { children: React.ReactNode; onError: (error: Error) => void }) {
+  return <>{children}</>;
+}
+
 
 interface JournalEditorProps {
   entryId?: string;
@@ -14,54 +38,84 @@ interface JournalEditorProps {
   onTitleUpdate?: (title: string) => void;
 }
 
-export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
+function Placeholder() {
+  return (
+    <div className="pointer-events-none absolute left-4 top-4 select-none text-muted-foreground">
+      Start writing...
+    </div>
+  );
+}
+
+function InitFromMarkdown({ value }: { value?: string }) {
+  const [editor] = useLexicalComposerContext();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    if (!mounted && value) {
+      setMounted(true);
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        $convertFromMarkdownString(value, TRANSFORMERS);
+        if (root.getChildrenSize() === 0) {
+          root.append($createParagraphNode());
+        }
+      });
+    }
+  }, [editor, value, mounted]);
+
+  return null;
+}
+
+function SpeechToTextPlugin({ transcript, onReset }: { transcript: string; onReset: () => void }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (transcript) {
+      editor.update(() => {
+        const textNode = $createTextNode(transcript);
+        $insertNodes([textNode]);
+      });
+      onReset();
+    }
+  }, [transcript, editor, onReset]);
+
+  return null;
+}
+
+function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [currentMarkdown, setCurrentMarkdown] = useState('');
   const lastSavedContentRef = useRef<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
+  const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
     if (entryId) {
       loadEntry(entryId);
     } else {
       // Set default date for new entries
-      setTimeout(() => {
-        if (contentRef.current) {
-          const today = new Date();
-          const dateString = today.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-          });
-          const defaultContent = `<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">${dateString}</div><div><br></div>`;
-          contentRef.current.innerHTML = defaultContent;
-          lastSavedContentRef.current = defaultContent;
-          
-          // Position cursor at the end of title
-          const range = document.createRange();
-          const sel = window.getSelection();
-          const firstDiv = contentRef.current.querySelector('div');
-          if (firstDiv && firstDiv.firstChild) {
-            range.setStartAfter(firstDiv.firstChild);
-            range.collapse(true);
-            sel?.removeAllRanges();
-            sel?.addRange(range);
-          }
-        }
-      }, 0);
+      const today = new Date();
+      const dateString = today.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      const defaultContent = `# ${dateString}\n\n`;
+      setCurrentMarkdown(defaultContent);
+      lastSavedContentRef.current = defaultContent;
+      
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        $convertFromMarkdownString(defaultContent, TRANSFORMERS);
+      });
     }
-  }, [entryId]);
-
-  useEffect(() => {
-    if (transcript && contentRef.current) {
-      insertTextAtCursor(transcript);
-      reset();
-    }
-  }, [transcript, reset]);
+  }, [entryId, editor]);
 
   const loadEntry = async (id: string) => {
     try {
@@ -81,44 +135,47 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
       }
 
       setEntry(data);
-      if (contentRef.current) {
-        const content = data.content || '<div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;">Untitled Entry</div><div><br></div>';
-        contentRef.current.innerHTML = content;
-        lastSavedContentRef.current = content;
-      }
+      const content = data.content || '# Untitled Entry\n\n';
+      setCurrentMarkdown(content);
+      lastSavedContentRef.current = content;
+      
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        $convertFromMarkdownString(content, TRANSFORMERS);
+      });
     } catch (error) {
       console.error('Error loading entry:', error);
     }
   };
 
-  const extractTextTitle = (htmlContent: string) => {
-    const div = document.createElement('div');
-    div.innerHTML = htmlContent;
-    const firstLine = div.querySelector('div')?.textContent || '';
-    return firstLine.trim();
+  const extractTitle = (markdown: string) => {
+    const lines = markdown.split('\n');
+    const firstLine = lines[0] || '';
+    // Remove # from markdown heading
+    return firstLine.replace(/^#+\s*/, '').trim() || 'Untitled Entry';
   };
 
-  const saveEntry = useCallback(async (htmlContent: string) => {
-    if (!htmlContent || htmlContent === lastSavedContentRef.current) return;
+  const saveEntry = useCallback(async (markdown: string) => {
+    if (!markdown || markdown === lastSavedContentRef.current) return;
 
     setLoading(true);
     
     try {
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
-      const title = extractTextTitle(htmlContent);
+      const title = extractTitle(markdown);
       
       if (entryId) {
         const { error } = await supabase
           .from('entries')
           .update({
             title: title || 'Untitled Entry',
-            content: htmlContent.trim(),
+            content: markdown.trim(),
           })
           .eq('id', entryId);
 
         if (error) throw error;
         
-        // Notify parent about title update
         onTitleUpdate?.(title || 'Untitled Entry');
         
         toast({
@@ -131,14 +188,13 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
           .insert({
             user_id: userId,
             title: title || 'Untitled Entry',
-            content: htmlContent.trim(),
+            content: markdown.trim(),
           })
           .select()
           .maybeSingle();
 
         if (error) throw error;
         
-        // Update the entryId for future saves
         if (data) {
           console.log('New entry created:', data.id);
           onEntryCreated?.(data.id, title);
@@ -149,7 +205,7 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
         }
       }
       
-      lastSavedContentRef.current = htmlContent;
+      lastSavedContentRef.current = markdown;
       setHasUnsavedChanges(false);
       
     } catch (error) {
@@ -164,14 +220,11 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     } finally {
       setLoading(false);
     }
-  }, [entryId, user?.id, toast, onEntryCreated]);
+  }, [entryId, user?.id, toast, onEntryCreated, onTitleUpdate]);
 
   const handleSave = useCallback(() => {
-    if (contentRef.current) {
-      const htmlContent = contentRef.current.innerHTML;
-      saveEntry(htmlContent);
-    }
-  }, [saveEntry]);
+    saveEntry(currentMarkdown);
+  }, [saveEntry, currentMarkdown]);
 
   const handleDelete = async () => {
     if (!entryId || !confirm('Are you sure you want to delete this entry?')) return;
@@ -212,171 +265,32 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
     }
   };
 
-  const insertTextAtCursor = (text: string) => {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const textNode = document.createTextNode(text);
-      range.insertNode(textNode);
-      range.setStartAfter(textNode);
-      range.setEndAfter(textNode);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
-  };
-
-  const isInTitleLine = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount || !contentRef.current) return false;
-    
-    const range = selection.getRangeAt(0);
-    const firstDiv = contentRef.current.querySelector('div');
-    
-    if (!firstDiv) return false;
-    
-    // Check if cursor is within the first div
-    return firstDiv.contains(range.commonAncestorContainer) || 
-           range.commonAncestorContainer === firstDiv;
-  }, []);
-
-  const execCommand = useCallback((command: string, value?: string) => {
-    // Prevent formatting commands on title line
-    if (isInTitleLine()) {
-      return;
-    }
-    document.execCommand(command, false, value);
-    contentRef.current?.focus();
-  }, [isInTitleLine]);
-
-  const ensureTitleFormatting = useCallback(() => {
-    if (!contentRef.current) return;
-    
-    const firstDiv = contentRef.current.querySelector('div');
-    if (firstDiv) {
-      // Ensure title div has correct styling
-      firstDiv.style.fontSize = '24px';
-      firstDiv.style.fontWeight = 'bold';
-      firstDiv.style.marginBottom = '8px';
-      
-      // If title is empty, set placeholder
-      if (!firstDiv.textContent?.trim()) {
-        firstDiv.textContent = 'Untitled Entry';
-      }
-    }
-  }, []);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const inTitleLine = isInTitleLine();
-    
-    if (e.ctrlKey || e.metaKey) {
-      // Prevent formatting commands on title line
-      if (inTitleLine && ['b', 'i', 'u'].includes(e.key.toLowerCase())) {
-        e.preventDefault();
-        return;
-      }
-      
-      switch (e.key.toLowerCase()) {
-        case 'b':
-          e.preventDefault();
-          execCommand('bold');
-          break;
-        case 'i':
-          e.preventDefault();
-          execCommand('italic');
-          break;
-        case 'u':
-          e.preventDefault();
-          execCommand('underline');
-          break;
-        case 'x':
-          if (e.shiftKey) {
-            e.preventDefault();
-            execCommand('strikeThrough');
-          }
-          break;
-      }
-    } else if (e.key === 'Enter' && inTitleLine) {
-      // Handle Enter key in title line - create new normal paragraph
-      e.preventDefault();
-      
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        
-        // Create new div for content (normal formatting)
-        const newDiv = document.createElement('div');
-        newDiv.innerHTML = '<br>';
-        
-        // Insert after the title div
-        const firstDiv = contentRef.current?.querySelector('div');
-        if (firstDiv && firstDiv.nextSibling) {
-          contentRef.current?.insertBefore(newDiv, firstDiv.nextSibling);
-        } else if (firstDiv) {
-          contentRef.current?.appendChild(newDiv);
-        }
-        
-        // Position cursor in the new div
-        const newRange = document.createRange();
-        newRange.setStart(newDiv, 0);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        
-        // Trigger content change
-        setHasUnsavedChanges(true);
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      execCommand('indent');
-    } else if (e.key === ' ') {
-      // Check for dash + space to convert to bullet (only in content, not title)
-      if (!inTitleLine) {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          const textBefore = range.startContainer.textContent?.slice(0, range.startOffset) || '';
-          if (textBefore.endsWith('-')) {
-            e.preventDefault();
-            // Remove the dash
-            range.setStart(range.startContainer, range.startOffset - 1);
-            range.deleteContents();
-            // Insert bullet point
-            const bulletNode = document.createTextNode('• ');
-            range.insertNode(bulletNode);
-            range.setStartAfter(bulletNode);
-            range.setEndAfter(bulletNode);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-        }
-      }
-    }
-  }, [isInTitleLine, execCommand]);
-
-  const handleContentChange = useCallback(() => {
-    ensureTitleFormatting();
-    setHasUnsavedChanges(true);
-  }, [ensureTitleFormatting]);
-
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    insertTextAtCursor(text);
-  }, []);
+  const handleChange = useCallback((editorState: any) => {
+    editor.update(() => {
+      const markdown = $convertToMarkdownString(TRANSFORMERS);
+      setCurrentMarkdown(markdown);
+      setHasUnsavedChanges(markdown !== lastSavedContentRef.current);
+    });
+  }, [editor]);
 
   return (
     <div className="space-y-4 h-full flex flex-col relative">
       <div className="flex-1">
-        <div
-          ref={contentRef}
-          contentEditable
-          suppressContentEditableWarning={true}
-          onInput={handleContentChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          className="min-h-[500px] h-full font-mono resize-none bg-white text-sm focus-visible:outline-none"
-          style={{ lineHeight: '1.5', paddingBottom: '80px' }} // Add padding for fixed button
-        />
+        <div className="min-h-[500px] h-full relative" style={{ paddingBottom: '80px' }}>
+          <RichTextPlugin
+            contentEditable={
+              <ContentEditable className="min-h-[500px] h-full font-mono text-sm focus-visible:outline-none bg-white px-4 py-4 [line-height:1.5]" />
+            }
+            placeholder={<Placeholder />}
+            ErrorBoundary={(props: any) => <div>Error loading editor</div>}
+          />
+          <HistoryPlugin />
+          <ListPlugin />
+          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+          <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
+          <InitFromMarkdown value={entryId ? undefined : currentMarkdown} />
+          <SpeechToTextPlugin transcript={transcript} onReset={reset} />
+        </div>
       </div>
 
       {/* Fixed buttons */}
@@ -425,5 +339,42 @@ export default function JournalEditor({ entryId, onDelete, onEntryCreated, onTit
         </div>
       )}
     </div>
+  );
+}
+
+export default function JournalEditor(props: JournalEditorProps) {
+  const initialConfig = {
+    namespace: 'JournalEditor',
+    onError(error: Error) {
+      console.error(error);
+    },
+    theme: {
+      paragraph: 'mb-2',
+      heading: {
+        h1: 'text-2xl font-bold mb-2',
+        h2: 'text-xl font-bold mb-2',
+        h3: 'text-lg font-bold mb-2',
+      },
+      text: {
+        bold: 'font-semibold',
+        italic: 'italic',
+        underline: 'underline',
+        strikethrough: 'line-through',
+      },
+      list: {
+        ul: 'list-disc list-inside mb-2',
+        ol: 'list-decimal list-inside mb-2',
+        nested: {
+          listitem: 'ml-4',
+        },
+      },
+    },
+    nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
+  };
+
+  return (
+    <LexicalComposer initialConfig={initialConfig}>
+      <EditorContent {...props} />
+    </LexicalComposer>
   );
 }
