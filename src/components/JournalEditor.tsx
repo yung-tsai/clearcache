@@ -26,8 +26,8 @@ import { $getRoot, $createParagraphNode, $insertNodes, $createTextNode } from 'l
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode } from '@lexical/list';
 
-function EditorErrorBoundary({ children, onError }: { children: React.ReactNode; onError: (error: Error) => void }) {
-  return <>{children}</>;
+function LexicalErrorBoundary({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>;
 }
 
 
@@ -282,7 +282,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
               <ContentEditable className="min-h-[500px] h-full font-mono text-sm focus-visible:outline-none bg-white px-4 py-4 [line-height:1.5]" />
             }
             placeholder={<Placeholder />}
-            ErrorBoundary={(props: any) => <div>Error loading editor</div>}
+            ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />
           <ListPlugin />
