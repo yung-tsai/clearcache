@@ -18,7 +18,7 @@ import {
 } from '@lexical/markdown';
 
 import { $getRoot, $createParagraphNode } from 'lexical';
-import { HeadingNode } from '@lexical/rich-text';
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
 
 /**
@@ -87,7 +87,7 @@ export default function JournalEditor({
           },
         },
       },
-      nodes: [HeadingNode, ListNode, ListItemNode],
+      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
     }),
     []
   );
