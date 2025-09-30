@@ -25,6 +25,8 @@ import { $getRoot, $createParagraphNode, $insertNodes, $createTextNode } from 'l
 
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode } from '@lexical/list';
+import { CodeNode, CodeHighlightNode } from '@lexical/code';
+import { LinkNode, AutoLinkNode } from '@lexical/link';
 
 function LexicalErrorBoundary({ children }: { children: React.ReactNode }) {
   return <div>{children}</div>;
@@ -369,7 +371,16 @@ export default function JournalEditor(props: JournalEditorProps) {
         },
       },
     },
-    nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
+    nodes: [
+      HeadingNode, 
+      QuoteNode, 
+      ListNode, 
+      ListItemNode, 
+      CodeNode, 
+      CodeHighlightNode,
+      LinkNode,
+      AutoLinkNode
+    ],
   };
 
   return (
