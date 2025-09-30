@@ -20,6 +20,7 @@ import {
 import { $getRoot, $createParagraphNode } from 'lexical';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
+import { CodeNode, CodeHighlightNode } from '@lexical/code';
 
 /**
  * Lexical editor for your "New Entry" screen.
@@ -87,7 +88,7 @@ export default function JournalEditor({
           },
         },
       },
-      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
+      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, CodeNode, CodeHighlightNode],
     }),
     []
   );
