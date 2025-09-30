@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { MacMenuBar } from './MacMenuBar';
 import { MacWindow } from './MacWindow';
 import { DesktopIcons } from './DesktopIcons';
+import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
 import StreakDisplay from './StreakDisplay';
@@ -18,17 +18,10 @@ interface OpenWindow {
 }
 
 export function MacDesktop() {
-  const navigate = useNavigate();
   const [windows, setWindows] = useState<OpenWindow[]>([]);
   const [nextZIndex, setNextZIndex] = useState(100);
 
   const handleMenuAction = (action: string) => {
-    // For new-entry, navigate directly to the page
-    if (action === 'new-entry') {
-      navigate('/app/new');
-      return;
-    }
-    
     const windowId = Date.now().toString();
     
     // Check for existing windows of the same type (single instance)
@@ -43,6 +36,14 @@ export function MacDesktop() {
     setNextZIndex(prev => prev + 1);
     
     switch (action) {
+      case 'new-entry':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'new-entry',
+          title: 'New Entry',
+          zIndex: newZIndex
+        }]);
+        break;
       case 'journal-folder':
         setWindows(prev => [...prev, {
           id: windowId,
@@ -70,9 +71,31 @@ export function MacDesktop() {
     }
   };
 
-  const handleOpenEntry = (entryId: string, title?: string) => {
-    // Navigate directly to the edit entry page
-    navigate(`/app/entry/${entryId}`);
+  const handleOpenEntry = (entryId: string, title: string) => {
+    // Check for existing edit-entry window (single instance for all entries)
+    const existingEditWindow = windows.find(w => w.content === 'edit-entry');
+    if (existingEditWindow) {
+      // Update existing window with new entry and bring to front
+      setWindows(prev => prev.map(w => 
+        w.id === existingEditWindow.id 
+          ? { ...w, entryId, title: title || 'Edit Entry', zIndex: nextZIndex }
+          : w
+      ));
+      setNextZIndex(prev => prev + 1);
+      return;
+    }
+
+    const windowId = Date.now().toString();
+    const newZIndex = nextZIndex;
+    setNextZIndex(prev => prev + 1);
+    
+    setWindows(prev => [...prev, {
+      id: windowId,
+      content: 'edit-entry',
+      title: title || 'Edit Entry',
+      entryId,
+      zIndex: newZIndex
+    }]);
   };
 
   const handleCloseWindow = (windowId: string) => {
@@ -89,12 +112,65 @@ export function MacDesktop() {
     ));
   };
 
-  const renderWindowContent = (win: OpenWindow) => {
-    switch (win.content) {
+  const handleEntryCreated = (windowId: string, entryId: string, title: string) => {
+    // Convert the new-entry window to an edit-entry window
+    setWindows(prev => prev.map(w => 
+      w.id === windowId 
+        ? { ...w, content: 'edit-entry', title: title || 'Edit Entry', entryId }
+        : w
+    ));
+    // Refresh journal folder windows to show the new entry
+    setWindows(prev => prev.map(w => 
+      w.content === 'journal-folder' 
+        ? { ...w, id: w.id + '-refreshed-' + Date.now() }
+        : w
+    ));
+  };
+
+  const handleTitleUpdate = (windowId: string, title: string) => {
+    // Update the window title when entry title changes
+    setWindows(prev => prev.map(w => 
+      w.id === windowId 
+        ? { ...w, title: title || 'Edit Entry' }
+        : w
+    ));
+    // Refresh journal folder windows to show updated titles
+    setWindows(prev => prev.map(w => 
+      w.content === 'journal-folder' 
+        ? { ...w, id: w.id + '-refreshed-' + Date.now() }
+        : w
+    ));
+  };
+
+  const handleEntryDeleted = (windowId: string) => {
+    // Close the editor window
+    handleCloseWindow(windowId);
+    // Trigger a refresh of any journal folder windows by updating their key
+    setWindows(prev => prev.map(w => 
+      w.content === 'journal-folder' 
+        ? { ...w, id: w.id + '-refreshed-' + Date.now() }
+        : w
+    ));
+  };
+
+  const renderWindowContent = (window: OpenWindow) => {
+    switch (window.content) {
+      case 'new-entry':
+        return <JournalEditor onEntryCreated={(entryId, title) => {
+          handleEntryCreated(window.id, entryId, title);
+        }} />;
       case 'journal-folder':
         return <JournalFolder onOpenEntry={handleOpenEntry} />;
+      case 'edit-entry':
+        return <JournalEditor 
+          entryId={window.entryId} 
+          onDelete={() => handleEntryDeleted(window.id)}
+          onTitleUpdate={(title) => handleTitleUpdate(window.id, title)}
+        />;
       case 'journal-calendar':
-        return <JournalCalendar onOpenEntry={handleOpenEntry} />;
+        return <JournalCalendar onOpenEntry={(entryId) => {
+          handleOpenEntry(entryId, 'Edit Entry');
+        }} />;
       case 'streaks':
         return <StreakDisplay />;
       default:
