@@ -1,9 +1,15 @@
 export type Role = 'user' | 'admin';
 
+export interface BackgroundPreference {
+  type: 'pattern' | 'color';
+  value: string;
+}
+
 export interface Profile {
   user_id: string;
   role: Role;
   created_at: string;
+  background_preference?: BackgroundPreference;
 }
 
 export interface Entry {

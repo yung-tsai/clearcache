@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MacMenuBar } from './MacMenuBar';
 import { MacWindow } from './MacWindow';
 import { DesktopIcons } from './DesktopIcons';
@@ -6,6 +6,12 @@ import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
 import StreakDisplay from './StreakDisplay';
+import { useAuth } from '@/hooks/useAuth';
+import { BackgroundPreference } from './BackgroundSelector';
+import swatchPattern from '@/assets/swatch-pattern.png';
+import dotsPattern from '@/assets/pattern-dots.png';
+import linesPattern from '@/assets/pattern-lines.png';
+import gridPattern from '@/assets/pattern-grid.png';
 
 export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks';
 
@@ -18,9 +24,67 @@ interface OpenWindow {
   noPadding?: boolean;
 }
 
+const patternMap: Record<string, string> = {
+  swatch: swatchPattern,
+  dots: dotsPattern,
+  lines: linesPattern,
+  grid: gridPattern,
+};
+
 export function MacDesktop() {
+  const { profile } = useAuth();
   const [windows, setWindows] = useState<OpenWindow[]>([]);
   const [nextZIndex, setNextZIndex] = useState(100);
+  const [backgroundStyle, setBackgroundStyle] = useState<React.CSSProperties>({});
+  const [previewStyle, setPreviewStyle] = useState<React.CSSProperties | null>(null);
+
+  // Load and apply background preference
+  useEffect(() => {
+    if (profile?.background_preference) {
+      const pref = profile.background_preference as BackgroundPreference;
+      applyBackground(pref);
+    }
+  }, [profile]);
+
+  // Listen for background changes
+  useEffect(() => {
+    const handleBackgroundChange = (e: CustomEvent<BackgroundPreference>) => {
+      applyBackground(e.detail);
+    };
+
+    const handleBackgroundPreview = (e: CustomEvent<BackgroundPreference | null>) => {
+      if (e.detail) {
+        setPreviewStyle(getBackgroundStyle(e.detail));
+      } else {
+        setPreviewStyle(null);
+      }
+    };
+
+    window.addEventListener('background-change' as any, handleBackgroundChange);
+    window.addEventListener('background-preview' as any, handleBackgroundPreview);
+
+    return () => {
+      window.removeEventListener('background-change' as any, handleBackgroundChange);
+      window.removeEventListener('background-preview' as any, handleBackgroundPreview);
+    };
+  }, []);
+
+  const getBackgroundStyle = (pref: BackgroundPreference): React.CSSProperties => {
+    if (pref.type === 'color') {
+      return { backgroundColor: pref.value };
+    } else {
+      const patternImage = patternMap[pref.value];
+      return {
+        backgroundImage: `url(${patternImage})`,
+        backgroundSize: pref.value === 'swatch' ? 'auto' : '150px',
+        backgroundRepeat: 'repeat',
+      };
+    }
+  };
+
+  const applyBackground = (pref: BackgroundPreference) => {
+    setBackgroundStyle(getBackgroundStyle(pref));
+  };
 
   const handleMenuAction = (action: string) => {
     const windowId = Date.now().toString();
@@ -182,8 +246,11 @@ export function MacDesktop() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-mac-desktop">
-      {/* Mac-style textured background */}
-      <div className="absolute inset-0 opacity-30 bg-repeat bg-mac-texture" />
+      {/* Mac-style textured background with user preference */}
+      <div 
+        className="absolute inset-0 opacity-30 transition-all duration-300" 
+        style={previewStyle || backgroundStyle}
+      />
       
       <MacMenuBar onMenuAction={handleMenuAction} />
       

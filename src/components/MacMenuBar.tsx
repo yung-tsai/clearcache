@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BackgroundSelector } from './BackgroundSelector';
 
 interface MacMenuBarProps {
   onMenuAction: (action: string) => void;
@@ -6,6 +7,7 @@ interface MacMenuBarProps {
 
 export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [showBackgroundSelector, setShowBackgroundSelector] = useState(false);
 
   const menuItems = [
     {
@@ -37,6 +39,8 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
         { label: 'Streaks', action: 'streaks', shortcut: '⌘3' },
         { label: 'Refresh', action: 'refresh', shortcut: '⌘R', disabled: true },
         { label: '---' },
+        { label: 'Backgrounds', action: 'backgrounds', shortcut: '⌘B' },
+        { label: '---' },
         { label: 'Zoom In', action: 'zoom-in', shortcut: '⌘+', disabled: true },
         { label: 'Zoom Out', action: 'zoom-out', shortcut: '⌘-', disabled: true },
       ]
@@ -58,19 +62,27 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
 
   const handleMenuItemClick = (action: string, disabled?: boolean) => {
     if (!disabled) {
-      onMenuAction(action);
+      if (action === 'backgrounds') {
+        setShowBackgroundSelector(true);
+        setActiveMenu(null);
+      } else {
+        onMenuAction(action);
+        setActiveMenu(null);
+      }
+    } else {
+      setActiveMenu(null);
     }
-    setActiveMenu(null);
   };
 
   const handleOutsideClick = () => {
     setActiveMenu(null);
+    setShowBackgroundSelector(false);
   };
 
   return (
     <>
       {/* Invisible overlay to catch outside clicks */}
-      {activeMenu && (
+      {(activeMenu || showBackgroundSelector) && (
         <div
           className="fixed inset-0 z-10"
           onClick={handleOutsideClick}
@@ -111,6 +123,13 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
                     </button>
                   )
                 ))}
+              </div>
+            )}
+            
+            {/* Background Selector Dropdown */}
+            {menu.label === 'View' && showBackgroundSelector && (
+              <div className="absolute" style={{ top: 'calc(100% + 24px)', left: 0 }}>
+                <BackgroundSelector onClose={() => setShowBackgroundSelector(false)} />
               </div>
             )}
           </div>
