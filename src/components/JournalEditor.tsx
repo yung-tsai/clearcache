@@ -274,28 +274,22 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
   return (
     <div className="h-full flex flex-col relative">
       {/* Title Input */}
-      <div className="border-b-2 border-black p-4 bg-white">
+      <div className="p-4 bg-white">
         <Input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
-          className="font-mono text-sm border-2 border-black focus-visible:ring-0 focus-visible:ring-offset-0 bg-white"
-          style={{
-            boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.3)'
-          }}
+          className="font-mono text-sm border border-black focus-visible:ring-0 focus-visible:ring-offset-0 bg-white"
         />
       </div>
 
       {/* Editor Area */}
-      <div className="flex-1 relative" style={{ paddingBottom: '60px' }}>
+      <div className="flex-1 relative border border-black" style={{ paddingBottom: '60px' }}>
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
               className="h-full font-mono text-sm focus-visible:outline-none bg-white px-4 py-4 [line-height:1.5] min-h-[400px]"
-              style={{
-                boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.2)'
-              }}
             />
           }
           placeholder={<Placeholder />}
