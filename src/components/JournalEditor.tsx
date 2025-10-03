@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeech } from '@/hooks/useSpeech';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,8 +43,8 @@ interface JournalEditorProps {
 
 function Placeholder() {
   return (
-    <div className="pointer-events-none absolute left-4 top-4 select-none text-muted-foreground">
-      Start writing...
+    <div className="pointer-events-none absolute left-4 top-4 select-none text-muted-foreground font-mono text-sm">
+      write what's on your mind and clear your cache
     </div>
   );
 }
@@ -88,9 +89,10 @@ function SpeechToTextPlugin({ transcript, onReset }: { transcript: string; onRes
 function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [title, setTitle] = useState('');
   const [currentMarkdown, setCurrentMarkdown] = useState('');
   const lastSavedContentRef = useRef<string>('');
+  const lastSavedTitleRef = useRef<string>('');
   const { user } = useAuth();
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
@@ -107,17 +109,10 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         month: 'short', 
         day: 'numeric' 
       });
-      const defaultContent = `# ${dateString}\n\n`;
-      setCurrentMarkdown(defaultContent);
-      lastSavedContentRef.current = defaultContent;
-      
-      editor.update(() => {
-        const root = $getRoot();
-        root.clear();
-        $convertFromMarkdownString(defaultContent, TRANSFORMERS);
-      });
+      setTitle(dateString);
+      lastSavedTitleRef.current = dateString;
     }
-  }, [entryId, editor]);
+  }, [entryId]);
 
   const loadEntry = async (id: string) => {
     try {
@@ -137,48 +132,45 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
       }
 
       setEntry(data);
-      const content = data.content || '# Untitled Entry\n\n';
+      const entryTitle = data.title || 'Untitled';
+      const content = data.content || '';
+      setTitle(entryTitle);
       setCurrentMarkdown(content);
       lastSavedContentRef.current = content;
+      lastSavedTitleRef.current = entryTitle;
       
-      editor.update(() => {
-        const root = $getRoot();
-        root.clear();
-        $convertFromMarkdownString(content, TRANSFORMERS);
-      });
+      if (content) {
+        editor.update(() => {
+          const root = $getRoot();
+          root.clear();
+          $convertFromMarkdownString(content, TRANSFORMERS);
+        });
+      }
     } catch (error) {
       console.error('Error loading entry:', error);
     }
   };
 
-  const extractTitle = (markdown: string) => {
-    const lines = markdown.split('\n');
-    const firstLine = lines[0] || '';
-    // Remove # from markdown heading
-    return firstLine.replace(/^#+\s*/, '').trim() || 'Untitled Entry';
-  };
-
-  const saveEntry = useCallback(async (markdown: string) => {
-    if (!markdown || markdown === lastSavedContentRef.current) return;
-
+  const saveEntry = useCallback(async () => {
     setLoading(true);
     
     try {
       const userId = user?.id || '00000000-0000-0000-0000-000000000000';
-      const title = extractTitle(markdown);
+      const finalTitle = title.trim() || 'Untitled';
+      const finalContent = currentMarkdown.trim();
       
       if (entryId) {
         const { error } = await supabase
           .from('entries')
           .update({
-            title: title || 'Untitled Entry',
-            content: markdown.trim(),
+            title: finalTitle,
+            content: finalContent,
           })
           .eq('id', entryId);
 
         if (error) throw error;
         
-        onTitleUpdate?.(title || 'Untitled Entry');
+        onTitleUpdate?.(finalTitle);
         
         toast({
           title: 'Saved',
@@ -189,8 +181,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
           .from('entries')
           .insert({
             user_id: userId,
-            title: title || 'Untitled Entry',
-            content: markdown.trim(),
+            title: finalTitle,
+            content: finalContent,
           })
           .select()
           .maybeSingle();
@@ -199,7 +191,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         
         if (data) {
           console.log('New entry created:', data.id);
-          onEntryCreated?.(data.id, title);
+          onEntryCreated?.(data.id, finalTitle);
           toast({
             title: 'Entry Created',
             description: 'Your new entry has been saved.',
@@ -207,8 +199,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         }
       }
       
-      lastSavedContentRef.current = markdown;
-      setHasUnsavedChanges(false);
+      lastSavedContentRef.current = finalContent;
+      lastSavedTitleRef.current = finalTitle;
       
     } catch (error) {
       console.error('Save error:', error);
@@ -222,11 +214,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
     } finally {
       setLoading(false);
     }
-  }, [entryId, user?.id, toast, onEntryCreated, onTitleUpdate]);
-
-  const handleSave = useCallback(() => {
-    saveEntry(currentMarkdown);
-  }, [saveEntry, currentMarkdown]);
+  }, [entryId, user?.id, toast, onEntryCreated, onTitleUpdate, title, currentMarkdown]);
 
   const handleDelete = async () => {
     if (!entryId || !confirm('Are you sure you want to delete this entry?')) return;
@@ -271,75 +259,105 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
     editor.update(() => {
       const markdown = $convertToMarkdownString(TRANSFORMERS);
       setCurrentMarkdown(markdown);
-      setHasUnsavedChanges(markdown !== lastSavedContentRef.current);
     });
   }, [editor]);
 
   return (
-    <div className="space-y-4 h-full flex flex-col relative">
-      <div className="flex-1">
-        <div className="min-h-[500px] h-full relative" style={{ paddingBottom: '80px' }}>
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable className="min-h-[500px] h-full font-mono text-sm focus-visible:outline-none bg-white px-4 py-4 [line-height:1.5]" />
-            }
-            placeholder={<Placeholder />}
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          <ListPlugin />
-          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
-          <InitFromMarkdown value={entryId ? undefined : currentMarkdown} />
-          <SpeechToTextPlugin transcript={transcript} onReset={reset} />
-        </div>
+    <div className="h-full flex flex-col relative">
+      {/* Title Input */}
+      <div className="border-b-2 border-black p-4 bg-white">
+        <Input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          className="font-mono text-sm border-2 border-black focus-visible:ring-0 focus-visible:ring-offset-0 bg-white"
+          style={{
+            boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.3)'
+          }}
+        />
       </div>
 
-      {/* Fixed buttons */}
-      <div className="fixed bottom-4 left-4 z-10 flex gap-2">
+      {/* Editor Area */}
+      <div className="flex-1 relative" style={{ paddingBottom: '60px' }}>
+        <RichTextPlugin
+          contentEditable={
+            <ContentEditable 
+              className="h-full font-mono text-sm focus-visible:outline-none bg-white px-4 py-4 [line-height:1.5] min-h-[400px]"
+              style={{
+                boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.2)'
+              }}
+            />
+          }
+          placeholder={<Placeholder />}
+          ErrorBoundary={LexicalErrorBoundary}
+        />
+        <HistoryPlugin />
+        <ListPlugin />
+        <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+        <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
+        <SpeechToTextPlugin transcript={transcript} onReset={reset} />
+      </div>
+
+      {/* Fixed Mac-style toolbar at bottom */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 border-t-2 border-black p-2 flex gap-2 items-center"
+        style={{
+          background: 'hsl(var(--mac-gray-light))',
+          boxShadow: '0 -2px 4px rgba(0,0,0,0.1)'
+        }}
+      >
         {isSupported && (
           <Button
             type="button"
-            variant="ghost"
             onClick={handleMicToggle}
             disabled={loading}
-            className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50"
+            className="mac-button flex items-center gap-2 text-xs"
+            style={{
+              boxShadow: isListening 
+                ? 'inset 1px 1px 2px rgba(0,0,0,0.3)' 
+                : '2px 2px 0px rgba(0,0,0,1)'
+            }}
           >
-            {isListening ? <MicOff size={12} /> : <Mic size={12} />}
+            {isListening ? <MicOff size={14} /> : <Mic size={14} />}
             {isListening ? 'Stop' : 'Mic'}
           </Button>
         )}
         
         <Button
           type="button"
-          variant="ghost"
-          onClick={handleSave}
-          disabled={loading || !hasUnsavedChanges}
-          className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50"
+          onClick={saveEntry}
+          disabled={loading}
+          className="mac-button flex items-center gap-2 text-xs"
+          style={{
+            boxShadow: '2px 2px 0px rgba(0,0,0,1)'
+          }}
         >
-          <Save size={12} />
-          {hasUnsavedChanges ? 'Save' : 'Saved'}
+          <Save size={14} />
+          Save
         </Button>
 
         {entryId && (
           <Button
             type="button"
-            variant="ghost"
             onClick={handleDelete}
             disabled={loading}
-            className="mac-button flex items-center gap-1 shadow-lg border border-gray-300 bg-white hover:bg-gray-50 text-red-600 hover:text-red-700"
+            className="mac-button flex items-center gap-2 text-xs"
+            style={{
+              boxShadow: '2px 2px 0px rgba(0,0,0,1)'
+            }}
           >
-            <Trash2 size={12} />
+            <Trash2 size={14} />
             Delete
           </Button>
         )}
-      </div>
 
-      {isListening && (
-        <div className="fixed bottom-16 left-4 text-xs font-mono text-muted-foreground bg-white px-2 py-1 rounded border shadow-sm">
-          🎤 Listening...
-        </div>
-      )}
+        {isListening && (
+          <span className="ml-auto text-xs font-mono">
+            🎤 Listening...
+          </span>
+        )}
+      </div>
     </div>
   );
 }
