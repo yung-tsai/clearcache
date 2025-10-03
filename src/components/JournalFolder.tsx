@@ -50,8 +50,9 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   const filteredEntries = entries.filter(entry => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
+    const entryTitle = extractTitle(entry).toLowerCase();
     return (
-      (entry.title?.toLowerCase().includes(query)) ||
+      entryTitle.includes(query) ||
       (entry.content?.toLowerCase().includes(query))
     );
   });
@@ -66,22 +67,26 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
     });
   };
 
-  const extractTitle = (content: string | null) => {
-    if (!content) return 'Untitled Entry';
+  const extractTitle = (entry: Entry) => {
+    // Use the title field if available
+    if (entry.title && entry.title.trim()) {
+      return entry.title;
+    }
     
-    // Try to extract first line from HTML content
+    // Fallback to extracting from content
+    if (!entry.content) return 'Untitled';
+    
     const div = document.createElement('div');
-    div.innerHTML = content;
+    div.innerHTML = entry.content;
     const firstDiv = div.querySelector('div');
     
     if (firstDiv) {
       const title = firstDiv.textContent?.trim() || '';
-      return title || 'Untitled Entry';
+      return title || 'Untitled';
     }
     
-    // Fallback for plain text
-    const firstLine = content.split('\n')[0]?.trim() || '';
-    return firstLine || 'Untitled Entry';
+    const firstLine = entry.content.split('\n')[0]?.trim() || '';
+    return firstLine || 'Untitled';
   };
 
   const getPreview = (content: string | null) => {
@@ -150,12 +155,12 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               className="block border border-black bg-white p-4 hover:bg-gray-50 transition-colors cursor-pointer"
               onClick={() => {
                 if (onOpenEntry) {
-                  onOpenEntry(entry.id, extractTitle(entry.content));
+                  onOpenEntry(entry.id, extractTitle(entry));
                 }
               }}
             >
               <h3 className="font-mono font-bold text-sm">
-                {extractTitle(entry.content)}
+                {extractTitle(entry)}
               </h3>
             </div>
           ))}
