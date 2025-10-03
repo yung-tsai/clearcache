@@ -113,9 +113,9 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
       <div className="relative h-[29px] mx-[2px] bg-white">
         {/* Double line border at bottom */}
         <div className="absolute bottom-[3px] left-0 right-0 h-[1px] bg-black" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black" />
+        <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
         
-        <div className="absolute inset-0 flex items-center px-2 pt-1">
+        <div className="absolute inset-0 flex items-center px-4 pt-1">
           {/* Left: Name */}
           <div className="flex-1 text-left">
             <button
@@ -126,23 +126,23 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
             </button>
           </div>
           
-          {/* Center: Last Modified */}
-          <div className="flex-1 text-center">
-            <button
-              onClick={() => handleSort('date')}
-              className="font-mono text-sm hover:opacity-70 transition-opacity"
-            >
-              Last Modified
-            </button>
-          </div>
-          
-          {/* Right: Word Count */}
-          <div className="flex-1 text-right">
+          {/* Center: Word Count */}
+          <div className="flex-1 text-left">
             <button
               onClick={() => handleSort('wordCount')}
               className="font-mono text-sm hover:opacity-70 transition-opacity"
             >
               Word Count
+            </button>
+          </div>
+          
+          {/* Right: Last Modified */}
+          <div className="flex-1 text-left">
+            <button
+              onClick={() => handleSort('date')}
+              className="font-mono text-sm hover:opacity-70 transition-opacity"
+            >
+              Last Modified
             </button>
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
             {sortedEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center px-2 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
+                className="flex items-center px-4 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
                 onClick={() => {
                   if (onOpenEntry) {
                     onOpenEntry(entry.id, extractTitle(entry));
@@ -174,22 +174,22 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               >
                 {/* Name */}
                 <div className="flex-1 text-left">
-                  <span className="font-mono text-sm">
+                  <span className="font-mono text-sm font-bold">
                     {extractTitle(entry)}
                   </span>
                 </div>
                 
-                {/* Last Modified */}
-                <div className="flex-1 text-center">
+                {/* Word Count */}
+                <div className="flex-1 text-left">
                   <span className="font-mono text-sm">
-                    {formatDate(entry.updated_at)}
+                    {getWordCount(entry.content)}
                   </span>
                 </div>
                 
-                {/* Word Count */}
-                <div className="flex-1 text-right">
+                {/* Last Modified */}
+                <div className="flex-1 text-left">
                   <span className="font-mono text-sm">
-                    {getWordCount(entry.content)}
+                    {formatDate(entry.updated_at)}
                   </span>
                 </div>
               </div>
