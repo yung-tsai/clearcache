@@ -152,10 +152,19 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
   };
 
   const saveEntry = useCallback(async () => {
+    if (!user?.id) {
+      toast({
+        title: 'Not Authenticated',
+        description: 'Please log in to save your entry.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
-      const userId = user?.id || '00000000-0000-0000-0000-000000000000';
+      const userId = user.id;
       const finalTitle = title.trim() || 'Untitled';
       const finalContent = currentMarkdown.trim();
       
