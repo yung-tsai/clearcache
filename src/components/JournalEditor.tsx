@@ -284,8 +284,11 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         />
       </div>
 
+      {/* Spacing between title and editor */}
+      <div className="h-4 bg-white" />
+
       {/* Editor Area */}
-      <div className="flex-1 relative border border-black overflow-y-auto" style={{ paddingBottom: '60px' }}>
+      <div className="flex-1 relative border border-black overflow-y-auto mb-16">
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
