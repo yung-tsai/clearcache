@@ -11,6 +11,7 @@ interface MacWindowProps {
   initialHeight?: number;
   zIndex?: number;
   className?: string;
+  noPadding?: boolean;
 }
 
 export function MacWindow({
@@ -23,7 +24,8 @@ export function MacWindow({
   initialWidth = 600,
   initialHeight = 400,
   zIndex = 10,
-  className = ""
+  className = "",
+  noPadding = false
 }: MacWindowProps) {
   const [position, setPosition] = useState({ x: initialX, y: initialY });
   const [size, setSize] = useState({ width: initialWidth, height: initialHeight });
@@ -255,7 +257,7 @@ export function MacWindow({
           left: '0px',
           right: '0px',
           bottom: '0px',
-          padding: '16px',
+          padding: noPadding ? '0px' : '16px',
           overflow: 'auto'
         }}
       >

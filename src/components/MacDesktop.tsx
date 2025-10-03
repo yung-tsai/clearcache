@@ -15,6 +15,7 @@ interface OpenWindow {
   title: string;
   entryId?: string;
   zIndex: number;
+  noPadding?: boolean;
 }
 
 export function MacDesktop() {
@@ -49,7 +50,8 @@ export function MacDesktop() {
           id: windowId,
           content: 'journal-folder',
           title: 'Journal Folder',
-          zIndex: newZIndex
+          zIndex: newZIndex,
+          noPadding: true
         }]);
         break;
       case 'journal-calendar':
@@ -197,6 +199,7 @@ export function MacDesktop() {
             initialWidth={800}
             initialHeight={600}
             zIndex={window.zIndex}
+            noPadding={window.noPadding}
           >
             {renderWindowContent(window)}
           </MacWindow>
