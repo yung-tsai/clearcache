@@ -280,7 +280,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
-          className="font-mono text-sm border border-black focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none px-4 py-2"
+          className="font-mono font-bold text-sm border border-black focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none px-4 py-2"
         />
       </div>
 
