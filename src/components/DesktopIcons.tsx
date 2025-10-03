@@ -66,7 +66,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
         alt={icon.name}
         className="w-8 h-8 object-contain pointer-events-none mb-1"
       />
-      <span className="text-xs text-black bg-white px-0.5 py-0.5 font-medium text-center leading-tight">
+      <span className="text-xs text-black bg-white px-0.5 py-0.5 font-medium text-center leading-tight w-full truncate">
         {icon.name}
       </span>
     </button>
