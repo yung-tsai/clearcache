@@ -251,7 +251,7 @@ export function MacDesktop() {
     <div className="h-screen w-screen overflow-hidden bg-mac-desktop">
       {/* Mac-style textured background with user preference */}
       <div 
-        className="absolute inset-0 opacity-30 transition-all duration-300" 
+        className="absolute inset-0 transition-all duration-300" 
         style={previewStyle || backgroundStyle}
       />
       
