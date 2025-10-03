@@ -1,28 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Entry } from '@/lib/database.types';
-import { MacWindow } from '@/components/MacWindow';
-import { Plus, Search } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface JournalFolderProps {
   onOpenEntry?: (entryId: string, title: string) => void;
 }
 
+type SortField = 'name' | 'date' | 'wordCount';
+type SortOrder = 'asc' | 'desc';
+
 export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadEntries();
-  }, [sortOrder]);
+  }, []);
 
   const loadEntries = async () => {
     try {
@@ -30,7 +28,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
       const { data, error } = await supabase
         .from('entries')
         .select('*')
-        .order('created_at', { ascending: sortOrder === 'oldest' });
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
@@ -47,24 +45,26 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
     }
   };
 
-  const filteredEntries = entries.filter(entry => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    const entryTitle = extractTitle(entry).toLowerCase();
-    return (
-      entryTitle.includes(query) ||
-      (entry.content?.toLowerCase().includes(query))
-    );
-  });
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return format(new Date(dateString), 'EEE, MMM d, yyyy');
+  };
+
+  const getWordCount = (content: string | null) => {
+    if (!content) return 0;
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    const text = div.textContent || div.innerText || '';
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length;
   };
 
   const extractTitle = (entry: Entry) => {
@@ -89,83 +89,110 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
     return firstLine || 'Untitled';
   };
 
-  const getPreview = (content: string | null) => {
-    if (!content) return 'No content';
+  const sortedEntries = [...entries].sort((a, b) => {
+    let comparison = 0;
     
-    // Extract text from HTML
-    const div = document.createElement('div');
-    div.innerHTML = content;
-    const textContent = div.textContent || div.innerText || '';
+    switch (sortField) {
+      case 'name':
+        comparison = extractTitle(a).localeCompare(extractTitle(b));
+        break;
+      case 'date':
+        comparison = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+        break;
+      case 'wordCount':
+        comparison = getWordCount(a.content) - getWordCount(b.content);
+        break;
+    }
     
-    // Skip the first line (title) and show the rest as preview
-    const lines = textContent.split('\n').filter(line => line.trim());
-    const previewText = lines.length > 1 ? lines.slice(1).join(' ') : (lines[0] || 'No content');
-    
-    return previewText.length > 100 ? previewText.substring(0, 100) + '...' : previewText;
-  };
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
 
   return (
-    <div>
-      {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search entries..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 font-mono"
-          />
-        </div>
-        
-        <div className="flex gap-2">
-          <Button
-            variant={sortOrder === 'newest' ? 'default' : 'outline'}
-            onClick={() => setSortOrder('newest')}
-            className="mac-button text-xs"
-          >
-            Newest
-          </Button>
-          <Button
-            variant={sortOrder === 'oldest' ? 'default' : 'outline'}
-            onClick={() => setSortOrder('oldest')}
-            className="mac-button text-xs"
-          >
-            Oldest
-          </Button>
+    <div className="flex flex-col h-full">
+      {/* Infobar */}
+      <div className="relative h-[29px] mx-[2px] bg-white border-b-2 border-black">
+        <div className="absolute inset-0 flex items-end px-2 pb-1">
+          {/* Left: Name */}
+          <div className="flex-1 text-left">
+            <button
+              onClick={() => handleSort('name')}
+              className="font-mono text-sm hover:opacity-70 transition-opacity"
+            >
+              Name {sortField === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
+            </button>
+          </div>
+          
+          {/* Center: Last Modified */}
+          <div className="flex-1 text-center">
+            <button
+              onClick={() => handleSort('date')}
+              className="font-mono text-sm hover:opacity-70 transition-opacity"
+            >
+              Last Modified {sortField === 'date' && (sortOrder === 'asc' ? '▲' : '▼')}
+            </button>
+          </div>
+          
+          {/* Right: Word Count */}
+          <div className="flex-1 text-right">
+            <button
+              onClick={() => handleSort('wordCount')}
+              className="font-mono text-sm hover:opacity-70 transition-opacity"
+            >
+              Word Count {sortField === 'wordCount' && (sortOrder === 'asc' ? '▲' : '▼')}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Entries List */}
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="text-sm font-mono">Loading entries...</div>
-        </div>
-      ) : filteredEntries.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="text-sm font-mono text-muted-foreground mb-4">
-            {searchQuery ? 'No entries match your search' : 'No journal entries yet'}
+      <div className="flex-1 overflow-auto">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="text-sm font-mono">Loading entries...</div>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredEntries.map((entry) => (
-            <div
-              key={entry.id}
-              className="block border border-black bg-white p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-              onClick={() => {
-                if (onOpenEntry) {
-                  onOpenEntry(entry.id, extractTitle(entry));
-                }
-              }}
-            >
-              <h3 className="font-mono font-bold text-sm">
-                {extractTitle(entry)}
-              </h3>
+        ) : sortedEntries.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-sm font-mono text-muted-foreground">
+              No journal entries yet
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div>
+            {sortedEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-center px-2 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
+                onClick={() => {
+                  if (onOpenEntry) {
+                    onOpenEntry(entry.id, extractTitle(entry));
+                  }
+                }}
+              >
+                {/* Name */}
+                <div className="flex-1 text-left">
+                  <span className="font-mono text-sm">
+                    {extractTitle(entry)}
+                  </span>
+                </div>
+                
+                {/* Last Modified */}
+                <div className="flex-1 text-center">
+                  <span className="font-mono text-sm">
+                    {formatDate(entry.updated_at)}
+                  </span>
+                </div>
+                
+                {/* Word Count */}
+                <div className="flex-1 text-right">
+                  <span className="font-mono text-sm">
+                    {getWordCount(entry.content)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
