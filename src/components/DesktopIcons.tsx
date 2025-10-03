@@ -59,7 +59,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
       {...attributes}
       {...listeners}
       onClick={() => onAction(icon.action)}
-      className="w-16 h-20 flex flex-col items-center justify-center p-2 transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group bg-transparent"
+      className="w-20 h-20 flex flex-col items-center justify-center p-2 transition-all duration-200 active:scale-95 cursor-grab active:cursor-grabbing group bg-transparent"
     >
       <img 
         src={icon.icon} 
@@ -74,7 +74,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
 }
 
 const DESKTOP_ICONS_STORAGE_KEY = 'desktop-icons-positions';
-const ICON_WIDTH = 64; // 16 * 4 (w-16)
+const ICON_WIDTH = 80; // 20 * 4 (w-20)
 const ICON_HEIGHT = 80; // 20 * 4 (h-20)
 
 const defaultIcons: Omit<DesktopIcon, 'x' | 'y'>[] = [
