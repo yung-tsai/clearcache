@@ -110,15 +110,19 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Infobar */}
-      <div className="relative h-[29px] mx-[2px] bg-white border-b-2 border-black">
-        <div className="absolute inset-0 flex items-end px-2 pb-1">
+      <div className="relative h-[29px] mx-[2px] bg-white">
+        {/* Double line border at bottom */}
+        <div className="absolute bottom-[3px] left-0 right-0 h-[1px] bg-black" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black" />
+        
+        <div className="absolute inset-0 flex items-center px-2">
           {/* Left: Name */}
           <div className="flex-1 text-left">
             <button
               onClick={() => handleSort('name')}
               className="font-mono text-sm hover:opacity-70 transition-opacity"
             >
-              Name {sortField === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
+              Name
             </button>
           </div>
           
@@ -128,7 +132,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               onClick={() => handleSort('date')}
               className="font-mono text-sm hover:opacity-70 transition-opacity"
             >
-              Last Modified {sortField === 'date' && (sortOrder === 'asc' ? '▲' : '▼')}
+              Last Modified
             </button>
           </div>
           
@@ -138,7 +142,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               onClick={() => handleSort('wordCount')}
               className="font-mono text-sm hover:opacity-70 transition-opacity"
             >
-              Word Count {sortField === 'wordCount' && (sortOrder === 'asc' ? '▲' : '▼')}
+              Word Count
             </button>
           </div>
         </div>
