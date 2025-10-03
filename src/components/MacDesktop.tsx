@@ -42,7 +42,10 @@ export function MacDesktop() {
   useEffect(() => {
     if (profile?.background_preference) {
       const pref = profile.background_preference as BackgroundPreference;
+      console.log('Applying background from profile:', pref);
       applyBackground(pref);
+    } else {
+      console.log('No background preference in profile, using default');
     }
   }, [profile]);
 

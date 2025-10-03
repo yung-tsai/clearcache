@@ -35,20 +35,29 @@ export function BackgroundSelector({ onClose }: BackgroundSelectorProps) {
   const [hoveredPreference, setHoveredPreference] = useState<BackgroundPreference | null>(null);
 
   const savePreference = async (preference: BackgroundPreference) => {
-    if (!user) return;
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
 
-    const { error } = await supabase
+    console.log('Saving background preference:', preference);
+    
+    const { data, error } = await supabase
       .from('profiles')
       .update({ background_preference: preference })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select();
 
     if (error) {
       toast.error('Failed to save background preference');
       console.error('Error saving background:', error);
     } else {
+      console.log('Background saved successfully:', data);
       toast.success('Background updated');
       // Trigger a custom event to notify MacDesktop
       window.dispatchEvent(new CustomEvent('background-change', { detail: preference }));
+      // Trigger profile reload
+      window.dispatchEvent(new CustomEvent('reload-profile'));
       onClose();
     }
   };

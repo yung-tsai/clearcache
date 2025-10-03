@@ -53,8 +53,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Listen for profile reload requests
+    const handleReloadProfile = () => {
+      if (user?.id) {
+        loadProfile(user.id);
+      }
+    };
+
+    window.addEventListener('reload-profile' as any, handleReloadProfile);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('reload-profile' as any, handleReloadProfile);
+    };
+  }, [user?.id]);
 
   const loadProfile = async (userId: string) => {
     try {
