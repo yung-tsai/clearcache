@@ -13,6 +13,7 @@ interface MacWindowProps {
   zIndex?: number;
   className?: string;
   noPadding?: boolean;
+  hideControls?: boolean;
 }
 
 export function MacWindow({
@@ -26,7 +27,8 @@ export function MacWindow({
   initialHeight = 400,
   zIndex = 10,
   className = "",
-  noPadding = false
+  noPadding = false,
+  hideControls = false
 }: MacWindowProps) {
   const [position, setPosition] = useState({ x: initialX, y: initialY });
   const [size, setSize] = useState({ width: initialWidth, height: initialHeight });
@@ -174,7 +176,7 @@ export function MacWindow({
         </div>
 
         {/* Close Button */}
-        {onClose && (
+        {!hideControls && onClose && (
           <button
             onClick={() => {
               playSound('windowClose');
@@ -195,31 +197,33 @@ export function MacWindow({
         )}
 
         {/* Expand/Maximize Button */}
-        <button
-          onClick={handleMaximize}
-          title={isMaximized ? "Restore" : "Maximize"}
-          style={{
-            position: 'absolute',
-            width: '16px',
-            height: '16px',
-            right: '13px',
-            top: '6px',
-            background: '#FFFFFF',
-            border: '1px solid #000000',
-            cursor: 'pointer'
-          }}
-        >
-          <div
+        {!hideControls && (
+          <button
+            onClick={handleMaximize}
+            title={isMaximized ? "Restore" : "Maximize"}
             style={{
               position: 'absolute',
-              width: '10px',
-              height: '10px',
-              left: '0px',
-              top: '0px',
-              border: '1px solid #000000'
+              width: '16px',
+              height: '16px',
+              right: '13px',
+              top: '6px',
+              background: '#FFFFFF',
+              border: '1px solid #000000',
+              cursor: 'pointer'
             }}
-          />
-        </button>
+          >
+            <div
+              style={{
+                position: 'absolute',
+                width: '10px',
+                height: '10px',
+                left: '0px',
+                top: '0px',
+                border: '1px solid #000000'
+              }}
+            />
+          </button>
+        )}
         
         {/* Title */}
         <div 

@@ -6,6 +6,7 @@ import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
 import StreakDisplay from './StreakDisplay';
+import { WelcomeScreen } from './WelcomeScreen';
 import { useAuth } from '@/hooks/useAuth';
 import { BackgroundPreference } from './BackgroundSelector';
 import swatchPattern from '@/assets/swatch-pattern.png';
@@ -13,7 +14,7 @@ import dotsPattern from '@/assets/pattern-dots.png';
 import linesPattern from '@/assets/pattern-lines.png';
 import gridPattern from '@/assets/pattern-grid.png';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'welcome';
 
 interface OpenWindow {
   id: string;
@@ -37,6 +38,7 @@ export function MacDesktop() {
   const [nextZIndex, setNextZIndex] = useState(100);
   const [backgroundStyle, setBackgroundStyle] = useState<React.CSSProperties>({});
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   // Load and apply background preference
   useEffect(() => {
@@ -224,6 +226,8 @@ export function MacDesktop() {
 
   const renderWindowContent = (window: OpenWindow) => {
     switch (window.content) {
+      case 'welcome':
+        return <WelcomeScreen onEnter={() => setShowWelcome(false)} />;
       case 'new-entry':
         return <JournalEditor onEntryCreated={(entryId, title) => {
           handleEntryCreated(window.id, entryId, title);
@@ -258,6 +262,21 @@ export function MacDesktop() {
       <MacMenuBar onMenuAction={handleMenuAction} />
       
       <div className="relative h-full pt-6">
+        {/* Welcome Screen */}
+        {showWelcome && (
+          <MacWindow
+            title="WELCOME TO"
+            initialX={window.innerWidth / 2 - 300}
+            initialY={window.innerHeight / 2 - 225}
+            initialWidth={600}
+            initialHeight={450}
+            zIndex={1000}
+            hideControls={true}
+          >
+            <WelcomeScreen onEnter={() => setShowWelcome(false)} />
+          </MacWindow>
+        )}
+
         {windows.map((window, index) => (
           <MacWindow
             key={window.id}
