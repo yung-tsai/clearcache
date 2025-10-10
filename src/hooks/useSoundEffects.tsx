@@ -64,8 +64,10 @@ export const useSoundEffects = () => {
           windowAudio.play().catch(() => {});
           break;
         case 'windowClose':
-          // Lower pop (like Mac window closing)
-          createBeep(600, 0.08, 0.15);
+          // Use same sound as window open
+          const closeAudio = new Audio(windowOpenSound);
+          closeAudio.volume = 0.4;
+          closeAudio.play().catch(() => {});
           break;
         case 'buttonClick':
           // Sharp click
