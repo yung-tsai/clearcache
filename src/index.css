@@ -214,4 +214,39 @@
       radial-gradient(circle at 0.5px 0.5px, white 0.5px, transparent 0.5px);
     background-size: 2px 2px;
   }
+
+  /* Auto-hide scrollbar */
+  .scrollbar-autohide {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  .scrollbar-autohide:hover,
+  .scrollbar-autohide:focus-within {
+    scrollbar-color: hsl(var(--mac-gray-dark)) transparent;
+  }
+
+  .scrollbar-autohide::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-autohide::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-autohide::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+
+  .scrollbar-autohide:hover::-webkit-scrollbar-thumb,
+  .scrollbar-autohide:focus-within::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--mac-gray-dark));
+  }
+
+  .scrollbar-autohide::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--mac-black));
+  }
 }

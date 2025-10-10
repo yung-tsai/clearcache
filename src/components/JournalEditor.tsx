@@ -289,7 +289,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
       <div className="h-4 bg-white" />
 
       {/* Editor Area */}
-      <div className="flex-1 relative overflow-y-auto mb-16">
+      <div className="flex-1 relative overflow-y-auto scrollbar-autohide mb-16">
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
