@@ -119,12 +119,11 @@
   }
 
   body {
-    @apply bg-background text-foreground font-mono;
+    @apply bg-background text-foreground font-sans;
     background-image: 
       radial-gradient(circle at 1px 1px, hsl(var(--mac-black)) 1px, transparent 0);
     background-size: 2px 2px;
     min-height: 100vh;
-    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   }
 
   /* Classic Mac Window Styles */
@@ -162,7 +161,7 @@
     align-items: center;
     justify-content: center;
     color: black;
-    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-family: 'ChicagoFLF', monospace;
     font-size: 12px;
     font-weight: bold;
   }
@@ -190,7 +189,7 @@
 
   /* Classic Mac Button Styles */
   .mac-button {
-    @apply border-2 border-black bg-white px-3 py-1 text-sm font-mono;
+    @apply border-2 border-black bg-white px-3 py-1 text-sm font-sans;
     box-shadow: 1px 1px 0px hsl(var(--mac-black));
   }
 
