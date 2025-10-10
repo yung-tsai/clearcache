@@ -11,7 +11,8 @@ import {
 } from '@dnd-kit/core';
 import journalFolderIcon from '@/assets/entry-folder.png';
 import newEntryIcon from '@/assets/new-entry.png';
-import calendarIcon from '@/assets/calendar-icon2.png';
+import calendarIcon from '@/assets/calendar-3.png';
+import streaksIcon from '@/assets/streaks.png';
 
 interface DesktopIconsProps {
   onIconAction: (action: string) => void;
@@ -95,6 +96,12 @@ const defaultIcons: Omit<DesktopIcon, 'x' | 'y'>[] = [
     icon: calendarIcon,
     name: 'Calendar',
     action: 'journal-calendar'
+  },
+  {
+    id: 'streaks',
+    icon: streaksIcon,
+    name: 'Streaks',
+    action: 'streaks'
   }
 ];
 

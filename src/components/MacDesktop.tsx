@@ -133,7 +133,7 @@ export function MacDesktop() {
         setWindows(prev => [...prev, {
           id: windowId,
           content: 'streaks',
-          title: 'Journal Streaks',
+          title: 'Streaks',
           zIndex: newZIndex
         }]);
         break;
