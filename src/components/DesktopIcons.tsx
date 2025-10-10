@@ -10,7 +10,7 @@ import {
   useDraggable
 } from '@dnd-kit/core';
 import journalFolderIcon from '@/assets/entry-folder.png';
-import newEntryIcon from '@/assets/new-entry.png';
+import newEntryIcon from '@/assets/new-entry-3.png';
 import calendarIcon from '@/assets/calendar-3.png';
 import streaksIcon from '@/assets/streaks.png';
 
