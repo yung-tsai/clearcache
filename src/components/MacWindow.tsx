@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface MacWindowProps {
   title: string;
@@ -37,6 +38,12 @@ export function MacWindow({
   const [previousState, setPreviousState] = useState({ x: initialX, y: initialY, width: initialWidth, height: initialHeight });
 
   const windowRef = useRef<HTMLDivElement>(null);
+  const { playSound } = useSoundEffects();
+
+  // Play window open sound on mount
+  useEffect(() => {
+    playSound('windowOpen');
+  }, [playSound]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Only allow dragging when not maximized and when clicking on title bar areas
@@ -169,7 +176,10 @@ export function MacWindow({
         {/* Close Button */}
         {onClose && (
           <button
-            onClick={onClose}
+            onClick={() => {
+              playSound('windowClose');
+              onClose();
+            }}
             title="Close"
             style={{
               position: 'absolute',

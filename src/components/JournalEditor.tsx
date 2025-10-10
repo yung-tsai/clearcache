@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useSpeech } from '@/hooks/useSpeech';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
@@ -96,6 +97,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
   const { user } = useAuth();
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
+  const { playSound } = useSoundEffects();
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -295,6 +297,9 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             <ContentEditable 
               className="h-full font-sans focus-visible:outline-none bg-white p-0 [line-height:1.5] min-h-[400px]"
               style={{ fontSize: '18px' }}
+              onKeyDown={() => {
+                playSound('keyPress');
+              }}
             />
           }
           placeholder={null}
@@ -331,7 +336,10 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         {entryId && (
           <Button
             type="button"
-            onClick={handleDelete}
+            onClick={() => {
+              playSound('buttonClick');
+              handleDelete();
+            }}
             disabled={loading}
             className="border border-black bg-white text-black hover:bg-white active:shadow-none transition-none"
             style={{
@@ -361,7 +369,10 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         
         <Button
           type="button"
-          onClick={saveEntry}
+          onClick={() => {
+            playSound('buttonClick');
+            saveEntry();
+          }}
           disabled={loading}
           className="ml-auto border border-black bg-white text-black hover:bg-white active:shadow-none transition-none"
           style={{
