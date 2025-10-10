@@ -280,7 +280,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
-          className="font-mono font-bold text-sm border border-black focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none px-4 py-2"
+          className="font-condensed font-semibold border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none p-0"
+          style={{ fontSize: '24px' }}
         />
       </div>
 
@@ -288,14 +289,15 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
       <div className="h-4 bg-white" />
 
       {/* Editor Area */}
-      <div className="flex-1 relative border border-black overflow-y-auto mb-16">
+      <div className="flex-1 relative overflow-y-auto mb-16">
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
-              className="h-full font-mono text-sm focus-visible:outline-none bg-white px-4 py-4 [line-height:1.5] min-h-[400px]"
+              className="h-full font-sans focus-visible:outline-none bg-white p-0 [line-height:1.5] min-h-[400px]"
+              style={{ fontSize: '18px' }}
             />
           }
-          placeholder={<Placeholder />}
+          placeholder={null}
           ErrorBoundary={LexicalErrorBoundary}
         />
         <HistoryPlugin />

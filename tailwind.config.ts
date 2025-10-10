@@ -63,6 +63,7 @@ export default {
       fontFamily: {
         'chicago': ['ChicagoFLF', 'monospace'],
         'sans': ['Open Sans', 'sans-serif'],
+        'condensed': ['Open Sans Condensed', 'sans-serif'],
       },
       backgroundImage: {
         "mac-texture": "var(--mac-texture)",
