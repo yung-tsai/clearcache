@@ -281,6 +281,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={() => playSound('keyPress')}
           placeholder="Title"
           className="font-condensed font-semibold border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none p-0"
           style={{ fontSize: '24px' }}

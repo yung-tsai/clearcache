@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react';
+import keyPressSound from '@/assets/key-press.mp3';
 
 // Sound effect types
 export type SoundEffect = 'windowOpen' | 'windowClose' | 'buttonClick' | 'keyPress';
@@ -25,6 +26,29 @@ const createBeep = (frequency: number, duration: number, volume: number = 0.3) =
 
 export const useSoundEffects = () => {
   const audioCache = useRef<Map<SoundEffect, HTMLAudioElement>>(new Map());
+  const keyPressAudioPool = useRef<HTMLAudioElement[]>([]);
+  const poolSize = 5; // Create multiple audio instances for rapid keypresses
+
+  // Initialize audio pool for keypress
+  const getKeyPressAudio = useCallback(() => {
+    if (keyPressAudioPool.current.length === 0) {
+      // Create initial pool
+      for (let i = 0; i < poolSize; i++) {
+        const audio = new Audio(keyPressSound);
+        audio.volume = 0.3;
+        keyPressAudioPool.current.push(audio);
+      }
+    }
+    
+    // Find an available audio instance (not playing)
+    let audio = keyPressAudioPool.current.find(a => a.paused);
+    if (!audio) {
+      // If all are busy, use the first one and restart it
+      audio = keyPressAudioPool.current[0];
+      audio.currentTime = 0;
+    }
+    return audio;
+  }, []);
 
   const playSound = useCallback((effect: SoundEffect) => {
     try {
@@ -44,15 +68,16 @@ export const useSoundEffects = () => {
           createBeep(1000, 0.05, 0.15);
           break;
         case 'keyPress':
-          // Subtle key click
-          createBeep(1200, 0.03, 0.1);
+          // Use actual MP3 sound file
+          const audio = getKeyPressAudio();
+          audio.play().catch(() => {});
           break;
       }
     } catch (error) {
       // Silently fail if audio context is not available
       console.debug('Sound effect failed:', error);
     }
-  }, []);
+  }, [getKeyPressAudio]);
 
   return { playSound };
 };
