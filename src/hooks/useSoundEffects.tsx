@@ -1,8 +1,10 @@
 import { useRef, useCallback } from 'react';
 import keyPressSound from '@/assets/key-press.mp3';
+import loginSound from '@/assets/login-sound.mp3';
+import windowOpenSound from '@/assets/window-open.mp3';
 
 // Sound effect types
-export type SoundEffect = 'windowOpen' | 'windowClose' | 'buttonClick' | 'keyPress';
+export type SoundEffect = 'windowOpen' | 'windowClose' | 'buttonClick' | 'keyPress' | 'login';
 
 // Simple beep sounds using Web Audio API as placeholders
 // Users can replace these with actual sound files later
@@ -56,8 +58,10 @@ export const useSoundEffects = () => {
       // Users can replace with actual sound files by updating the switch cases
       switch (effect) {
         case 'windowOpen':
-          // High-pitched pop (like Mac window opening)
-          createBeep(800, 0.1, 0.2);
+          // Use actual MP3 sound file
+          const windowAudio = new Audio(windowOpenSound);
+          windowAudio.volume = 0.4;
+          windowAudio.play().catch(() => {});
           break;
         case 'windowClose':
           // Lower pop (like Mac window closing)
@@ -71,6 +75,12 @@ export const useSoundEffects = () => {
           // Use actual MP3 sound file
           const audio = getKeyPressAudio();
           audio.play().catch(() => {});
+          break;
+        case 'login':
+          // Use actual MP3 sound file
+          const loginAudio = new Audio(loginSound);
+          loginAudio.volume = 0.5;
+          loginAudio.play().catch(() => {});
           break;
       }
     } catch (error) {

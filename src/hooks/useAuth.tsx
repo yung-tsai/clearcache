@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/lib/database.types';
+import { useSoundEffects } from './useSoundEffects';
 
 interface AuthContextType {
   user: User | null;
@@ -24,6 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const { playSound } = useSoundEffects();
+  const hasPlayedLoginSound = useRef(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -31,14 +34,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // Defer profile loading to avoid callback deadlock
+      // Defer profile loading and sound effect to avoid callback deadlock
       if (session?.user) {
         setTimeout(() => {
           loadProfile(session.user.id);
+          
+          // Play login sound only once per session
+          if (!hasPlayedLoginSound.current) {
+            playSound('login');
+            hasPlayedLoginSound.current = true;
+          }
         }, 0);
       } else {
         setProfile(null);
         setLoading(false);
+        hasPlayedLoginSound.current = false;
       }
     });
 
