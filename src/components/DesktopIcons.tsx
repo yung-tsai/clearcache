@@ -9,7 +9,7 @@ import {
   DragEndEvent,
   useDraggable
 } from '@dnd-kit/core';
-import journalFolderIcon from '@/assets/journal-folder.png';
+import journalFolderIcon from '@/assets/entry-folder.png';
 import newEntryIcon from '@/assets/new-entry.png';
 import calendarIcon from '@/assets/calendar-icon2.png';
 
@@ -66,7 +66,7 @@ function DraggableIcon({ icon, onAction }: DraggableIconProps) {
         alt={icon.name}
         className="w-8 h-8 object-contain pointer-events-none mb-1"
       />
-      <span className="text-xs text-black bg-white px-0.5 py-0.5 font-medium text-center leading-tight w-full truncate">
+      <span className="text-xs text-black bg-white p-0.5 font-medium text-center leading-tight whitespace-nowrap" style={{ fontFamily: 'Open Sans' }}>
         {icon.name}
       </span>
     </button>
@@ -81,7 +81,7 @@ const defaultIcons: Omit<DesktopIcon, 'x' | 'y'>[] = [
   {
     id: 'journal-folder',
     icon: journalFolderIcon,
-    name: 'Journal Folder',
+    name: 'View Entries',
     action: 'journal-folder'
   },
   {
