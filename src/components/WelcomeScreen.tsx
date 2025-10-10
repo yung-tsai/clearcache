@@ -13,7 +13,7 @@ export function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
       <img 
         src={clearCacheLogo} 
         alt="Clear Cache" 
-        className="w-72 h-auto"
+        style={{ width: '320px', height: 'auto' }}
       />
       
       <button
