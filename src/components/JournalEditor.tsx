@@ -309,18 +309,14 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
 
       {/* Fixed Mac-style toolbar at bottom */}
       <div 
-        className="fixed bottom-0 left-0 right-0 border-t-2 border-black p-2 flex gap-2 items-center"
-        style={{
-          background: 'hsl(var(--mac-gray-light))',
-          boxShadow: '0 -2px 4px rgba(0,0,0,0.1)'
-        }}
+        className="fixed bottom-0 left-0 right-0 p-2 flex gap-2 items-center bg-white"
       >
         {isSupported && (
           <Button
             type="button"
             onClick={handleMicToggle}
             disabled={loading}
-            className="mac-button flex items-center gap-2 text-xs"
+            className="mac-button hidden items-center gap-2 text-xs"
             style={{
               boxShadow: isListening 
                 ? 'inset 1px 1px 2px rgba(0,0,0,0.3)' 
@@ -331,34 +327,64 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             {isListening ? 'Stop' : 'Mic'}
           </Button>
         )}
-        
-        <Button
-          type="button"
-          onClick={saveEntry}
-          disabled={loading}
-          className="mac-button flex items-center gap-2 text-xs"
-          style={{
-            boxShadow: '2px 2px 0px rgba(0,0,0,1)'
-          }}
-        >
-          <Save size={14} />
-          Save
-        </Button>
 
         {entryId && (
           <Button
             type="button"
             onClick={handleDelete}
             disabled={loading}
-            className="mac-button flex items-center gap-2 text-xs"
+            className="border border-black bg-white hover:bg-white active:shadow-none transition-none"
             style={{
-              boxShadow: '2px 2px 0px rgba(0,0,0,1)'
+              width: '62px',
+              height: '36px',
+              padding: '5px',
+              boxShadow: '2px 2px 0px #000000',
+              fontFamily: 'ChicagoFLF',
+              fontSize: '20px',
+              lineHeight: '26px',
+              letterSpacing: '-0.004em'
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
             }}
           >
-            <Trash2 size={14} />
             Delete
           </Button>
         )}
+        
+        <Button
+          type="button"
+          onClick={saveEntry}
+          disabled={loading}
+          className="ml-auto border border-black bg-white hover:bg-white active:shadow-none transition-none"
+          style={{
+            width: '62px',
+            height: '36px',
+            padding: '5px',
+            boxShadow: '2px 2px 0px #000000',
+            fontFamily: 'ChicagoFLF',
+            fontSize: '20px',
+            lineHeight: '26px',
+            letterSpacing: '-0.004em'
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+          }}
+        >
+          Save
+        </Button>
 
         {isListening && (
           <span className="ml-auto text-xs font-mono">
