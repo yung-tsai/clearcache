@@ -267,9 +267,9 @@ export function MacDesktop() {
           <MacWindow
             title="WELCOME TO"
             initialX={window.innerWidth / 2 - 300}
-            initialY={window.innerHeight / 2 - 225}
+            initialY={window.innerHeight / 2 - 175}
             initialWidth={600}
-            initialHeight={450}
+            initialHeight={350}
             zIndex={1000}
             hideControls={true}
           >

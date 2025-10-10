@@ -9,14 +9,12 @@ export function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
   const [isPressed, setIsPressed] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
-      <div className="flex-1 flex items-center justify-center">
-        <img 
-          src={clearCacheLogo} 
-          alt="Clear Cache" 
-          className="max-w-md w-full h-auto"
-        />
-      </div>
+    <div className="flex flex-col items-center justify-center h-full p-8 gap-8">
+      <img 
+        src={clearCacheLogo} 
+        alt="Clear Cache" 
+        className="w-72 h-auto"
+      />
       
       <button
         onClick={onEnter}
