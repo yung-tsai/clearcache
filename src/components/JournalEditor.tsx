@@ -333,7 +333,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             type="button"
             onClick={handleDelete}
             disabled={loading}
-            className="border border-black bg-white hover:bg-white active:shadow-none transition-none"
+            className="border border-black bg-white text-black hover:bg-white active:shadow-none transition-none"
             style={{
               width: '62px',
               height: '36px',
@@ -342,7 +342,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
               fontFamily: 'ChicagoFLF',
               fontSize: '20px',
               lineHeight: '26px',
-              letterSpacing: '-0.004em'
+              letterSpacing: '-0.004em',
+              color: '#000000'
             }}
             onMouseDown={(e) => {
               e.currentTarget.style.boxShadow = 'none';
@@ -362,7 +363,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
           type="button"
           onClick={saveEntry}
           disabled={loading}
-          className="ml-auto border border-black bg-white hover:bg-white active:shadow-none transition-none"
+          className="ml-auto border border-black bg-white text-black hover:bg-white active:shadow-none transition-none"
           style={{
             width: '62px',
             height: '36px',
@@ -371,7 +372,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             fontFamily: 'ChicagoFLF',
             fontSize: '20px',
             lineHeight: '26px',
-            letterSpacing: '-0.004em'
+            letterSpacing: '-0.004em',
+            color: '#000000'
           }}
           onMouseDown={(e) => {
             e.currentTarget.style.boxShadow = 'none';
