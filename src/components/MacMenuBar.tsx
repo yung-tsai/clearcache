@@ -14,35 +14,20 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
       label: 'File',
       items: [
         { label: 'New Entry', action: 'new-entry', shortcut: '⌘N' },
-        { label: 'Open...', action: 'open', shortcut: '⌘O', disabled: true },
-        { label: 'Save', action: 'save', shortcut: '⌘S', disabled: true },
-        { label: '---' },
-        { label: 'Quit', action: 'quit', shortcut: '⌘Q', disabled: true },
       ]
     },
     {
       label: 'Edit',
       items: [
-        { label: 'Undo', action: 'undo', shortcut: '⌘Z', disabled: true },
-        { label: 'Redo', action: 'redo', shortcut: '⌘⇧Z', disabled: true },
-        { label: '---' },
-        { label: 'Cut', action: 'cut', shortcut: '⌘X', disabled: true },
-        { label: 'Copy', action: 'copy', shortcut: '⌘C', disabled: true },
-        { label: 'Paste', action: 'paste', shortcut: '⌘V', disabled: true },
+        { label: 'Backgrounds', action: 'backgrounds', shortcut: '⌘B' },
       ]
     },
     {
       label: 'View',
       items: [
-        { label: 'Journal Folder', action: 'journal-folder', shortcut: '⌘1' },
+        { label: 'Entries', action: 'journal-folder', shortcut: '⌘1' },
         { label: 'Calendar', action: 'journal-calendar', shortcut: '⌘2' },
         { label: 'Streaks', action: 'streaks', shortcut: '⌘3' },
-        { label: 'Refresh', action: 'refresh', shortcut: '⌘R', disabled: true },
-        { label: '---' },
-        { label: 'Backgrounds', action: 'backgrounds', shortcut: '⌘B' },
-        { label: '---' },
-        { label: 'Zoom In', action: 'zoom-in', shortcut: '⌘+', disabled: true },
-        { label: 'Zoom Out', action: 'zoom-out', shortcut: '⌘-', disabled: true },
       ]
     },
     {
@@ -127,7 +112,7 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
             )}
             
             {/* Background Selector Dropdown */}
-            {menu.label === 'View' && showBackgroundSelector && (
+            {menu.label === 'Edit' && showBackgroundSelector && (
               <div className="absolute" style={{ top: 'calc(100% + 24px)', left: 0 }}>
                 <BackgroundSelector onClose={() => setShowBackgroundSelector(false)} />
               </div>
