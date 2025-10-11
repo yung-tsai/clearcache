@@ -14,6 +14,7 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
       label: 'File',
       items: [
         { label: 'New Entry', action: 'new-entry', shortcut: '⌘N' },
+        { label: 'Search Entries', action: 'journal-folder', shortcut: '⌘F' },
       ]
     },
     {
@@ -25,18 +26,14 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
     {
       label: 'View',
       items: [
-        { label: 'Entries', action: 'journal-folder', shortcut: '⌘1' },
         { label: 'Calendar', action: 'journal-calendar', shortcut: '⌘2' },
         { label: 'Streaks', action: 'streaks', shortcut: '⌘3' },
       ]
     },
     {
-      label: 'Special',
+      label: 'Profile',
       items: [
-        { label: 'About This App', action: 'about', disabled: true },
-        { label: 'Preferences...', action: 'preferences', shortcut: '⌘,', disabled: true },
-        { label: '---' },
-        { label: 'System Info', action: 'system-info', disabled: true },
+        { label: 'Sign Out', action: 'sign-out', disabled: true },
       ]
     }
   ];
