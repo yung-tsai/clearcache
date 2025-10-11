@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import clearCacheLogo from '@/assets/Clear_Cache_Logo.png';
+import clearCacheLogo from '@/assets/cc-logo-concept.png';
 
 interface WelcomeScreenProps {
   onEnter: () => void;
@@ -25,7 +25,7 @@ export function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
         style={{
           padding: '15px',
           gap: '10px',
-          width: '88px',
+          width: '320px',
           height: '56px',
           boxShadow: isPressed ? 'none' : '2px 2px 0px #000000',
           fontFamily: 'ChicagoFLF',
