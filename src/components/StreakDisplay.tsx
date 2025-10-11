@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, Target, Zap, Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import logomark from '@/assets/cc-logomark.png';
+import streaksIcon from '@/assets/streaks.png';
 
 interface StreakData {
   current_streak: number;
@@ -44,16 +45,16 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
   useEffect(() => {
     // Trigger sequential animations after component mounts and data is loaded
     if (!loading) {
-      const streakCount = variant === 'compact' ? 2 : 4;
+      const streakCount = 4;
       
       // Start animations sequentially from top to bottom
       for (let i = 0; i < streakCount; i++) {
         setTimeout(() => {
           setAnimatedBars(prev => new Set([...prev, i]));
-        }, i * (variant === 'compact' ? 500 : 700));
+        }, i * 700);
       }
     }
-  }, [loading, variant]);
+  }, [loading]);
 
   const loadStreakData = async () => {
     try {
@@ -118,139 +119,114 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
 
   const streaks = [
     {
-      title: 'Current Streak',
+      title: 'Daily',
       value: streakData?.current_streak || 0,
       max: Math.max(streakData?.longest_streak || 7, 7),
-      unit: 'days',
-      icon: Zap,
+      unit: 'Days',
       isRecord: false
     },
     {
-      title: 'Weekly Goal',
+      title: 'Weekly',
       value: weeklyEntries,
       max: 7,
-      unit: 'days',
-      icon: Target,
+      unit: 'Days',
       isRecord: false
     },
     {
-      title: 'Monthly Challenge',
+      title: 'Monthly',
       value: monthlyEntries,
       max: 30,
-      unit: 'entries',
-      icon: Calendar,
+      unit: 'Days',
       isRecord: false
     },
     {
-      title: 'All Time Best',
+      title: 'All Time',
       value: streakData?.longest_streak || 0,
       max: streakData?.longest_streak || 1,
-      unit: 'days',
-      icon: Trophy,
+      unit: 'Days',
       isRecord: true
     }
   ];
 
-  if (variant === 'compact') {
-    return (
-      <div className="bg-white border border-gray-300 rounded-lg p-4 space-y-3">
-        {streaks.slice(0, 2).map((streak, index) => {
-          const Icon = streak.icon;
-          const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
-          const animatedPercentage = animatedBars.has(index) ? percentage : 0;
-          
-          return (
-            <div 
-              key={streak.title} 
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 500}ms` }}
-            >
-              {/* Title row */}
-              <div className="flex items-center gap-2 mb-2">
-                <Icon className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-mono text-gray-900">{streak.title}</span>
-              </div>
-              
-              {/* Progress bar with flanking values */}
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-mono text-gray-600 min-w-[50px]">
-                  {streak.value}/{streak.max} {streak.unit}
-                </span>
-                <div className="flex-1">
-                  <Progress 
-                    value={animatedPercentage} 
-                    className="h-2 mac-progress"
-                    style={{
-                      transition: 'all 5s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  />
-                </div>
-                <span className="text-xs font-mono text-gray-500 min-w-[40px] text-right">
-                  {Math.round(percentage)}%
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-      {/* Mac-style header */}
-      <div className="border-b border-gray-200 px-4 py-3">
-        <h3 className="text-sm font-mono text-gray-900">Journal Streaks</h3>
+    <div className="bg-white p-8 w-full h-full overflow-auto">
+      {/* Top section with logo and How it works */}
+      <div className="flex items-start gap-8 mb-8">
+        {/* Logomark */}
+        <img 
+          src={logomark} 
+          alt="Clear Cache" 
+          className="w-32 h-32"
+        />
+        
+        {/* How it works section */}
+        <div className="flex-1">
+          <h2 className="font-chicago text-2xl mb-4">How it works</h2>
+          <div className="space-y-2 font-sans text-base">
+            <p>
+              <span className="font-semibold">Daily:</span> Days you've written journal entries in a row.
+            </p>
+            <p>
+              <span className="font-semibold">Weekly:</span> Entries written this week (out of 7).
+            </p>
+            <p>
+              <span className="font-semibold">Monthly:</span> Entries written this month (out of 30).
+            </p>
+            <p>
+              <span className="font-semibold">All Time:</span> Your longest daily streak.
+            </p>
+          </div>
+        </div>
       </div>
-      
-      {/* Content area */}
-      <div className="p-4 space-y-4">
+
+      {/* Table */}
+      <div className="border-t border-b border-black">
+        {/* Table headers */}
+        <div className="grid grid-cols-[2fr_2fr_3fr] gap-4 py-3 border-b border-black">
+          <div className="font-chicago text-xl">Streaks</div>
+          <div className="font-chicago text-xl">Days</div>
+          <div className="font-chicago text-xl">Progress</div>
+        </div>
+
+        {/* Table rows */}
         {streaks.map((streak, index) => {
-          const Icon = streak.icon;
           const percentage = streak.isRecord ? 100 : (streak.value / streak.max) * 100;
           const animatedPercentage = animatedBars.has(index) ? percentage : 0;
           
           return (
             <div 
               key={streak.title}
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 700}ms` }}
+              className={`grid grid-cols-[2fr_2fr_3fr] gap-4 py-4 items-center ${
+                index < streaks.length - 1 ? 'border-b border-gray-300' : ''
+              }`}
             >
-              {/* Three-column Mac layout: Text | Progress Bar | Values */}
-              <div className="grid grid-cols-[2fr,3fr,2fr] gap-6 items-center">
-                {/* Left column: Text info */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-gray-600" />
-                    <span className="text-xs font-mono text-gray-900 whitespace-nowrap">{streak.title}</span>
-                  </div>
-                </div>
-                
-                {/* Middle column: Progress bar only */}
-                <div className="space-y-2">
-                  <div className="w-full">
-                    <Progress 
-                      value={animatedPercentage}
-                      className="h-3 mac-progress w-full"
-                      style={{
-                        transition: 'all 5s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                    />
-                  </div>
-                </div>
-                
-                {/* Right column: Values */}
-                <div className="space-y-1">
-                  <span className="text-xs font-mono text-gray-600 whitespace-nowrap">
-                    {streak.value}/{streak.max} {streak.unit}
-                  </span>
-                </div>
+              {/* Streaks column */}
+              <div className="flex items-center gap-2">
+                <img 
+                  src={streaksIcon} 
+                  alt="" 
+                  className="w-5 h-5"
+                />
+                <span className="font-condensed font-semibold text-xl">
+                  {streak.title}
+                </span>
               </div>
-              
-              {/* Separator line between items (except last) */}
-              {index < streaks.length - 1 && (
-                <hr className="mt-4 border-gray-200" />
-              )}
+
+              {/* Days column */}
+              <div className="font-sans text-lg">
+                {streak.value}/{streak.max} {streak.unit}
+              </div>
+
+              {/* Progress column */}
+              <div className="w-full">
+                <Progress 
+                  value={animatedPercentage}
+                  className="h-4 mac-progress w-full"
+                  style={{
+                    transition: 'all 5s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                />
+              </div>
             </div>
           );
         })}
