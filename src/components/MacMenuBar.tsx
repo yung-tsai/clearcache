@@ -33,6 +33,8 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
     {
       label: 'Profile',
       items: [
+        { label: 'Settings...', action: 'settings', shortcut: '⌘,' },
+        { label: '---' },
         { label: 'Sign Out', action: 'sign-out', disabled: true },
       ]
     }

@@ -6,6 +6,7 @@ import JournalEditor from './JournalEditor';
 import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
 import StreakDisplay from './StreakDisplay';
+import { Settings } from './Settings';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useAuth } from '@/hooks/useAuth';
 import { BackgroundPreference } from './BackgroundSelector';
@@ -14,7 +15,7 @@ import dotsPattern from '@/assets/pattern-dots.png';
 import linesPattern from '@/assets/pattern-lines.png';
 import gridPattern from '@/assets/pattern-grid.png';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'welcome';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'settings' | 'welcome';
 
 interface OpenWindow {
   id: string;
@@ -139,6 +140,14 @@ export function MacDesktop() {
           zIndex: newZIndex
         }]);
         break;
+      case 'settings':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'settings',
+          title: 'Settings',
+          zIndex: newZIndex
+        }]);
+        break;
     }
   };
 
@@ -246,6 +255,8 @@ export function MacDesktop() {
         }} />;
       case 'streaks':
         return <StreakDisplay />;
+      case 'settings':
+        return <Settings />;
       default:
         return null;
     }

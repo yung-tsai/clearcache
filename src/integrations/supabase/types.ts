@@ -85,18 +85,21 @@ export type Database = {
           background_preference: Json | null
           created_at: string
           role: string
+          sound_preferences: Json | null
           user_id: string
         }
         Insert: {
           background_preference?: Json | null
           created_at?: string
           role?: string
+          sound_preferences?: Json | null
           user_id: string
         }
         Update: {
           background_preference?: Json | null
           created_at?: string
           role?: string
+          sound_preferences?: Json | null
           user_id?: string
         }
         Relationships: []

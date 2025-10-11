@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react';
 import keyPressSound from '@/assets/key-press.mp3';
 import loginSound from '@/assets/login-sound.mp3';
 import windowOpenSound from '@/assets/window-open.mp3';
+import { useSoundSettings } from './useSoundSettings';
 
 // Sound effect types
 export type SoundEffect = 'windowOpen' | 'windowClose' | 'buttonClick' | 'keyPress' | 'login';
@@ -27,6 +28,7 @@ const createBeep = (frequency: number, duration: number, volume: number = 0.3) =
 };
 
 export const useSoundEffects = () => {
+  const { preferences } = useSoundSettings();
   const audioCache = useRef<Map<SoundEffect, HTMLAudioElement>>(new Map());
   const keyPressAudioPool = useRef<HTMLAudioElement[]>([]);
   const poolSize = 5; // Create multiple audio instances for rapid keypresses
@@ -54,42 +56,53 @@ export const useSoundEffects = () => {
 
   const playSound = useCallback((effect: SoundEffect) => {
     try {
-      // For now, use simple beep sounds as placeholders
-      // Users can replace with actual sound files by updating the switch cases
+      // Map sound effects to preference keys
+      const soundMap: Record<SoundEffect, keyof typeof preferences.sounds> = {
+        windowOpen: 'window',
+        windowClose: 'window',
+        keyPress: 'keyboard',
+        login: 'login',
+        buttonClick: 'buttonClick',
+      };
+
+      const soundKey = soundMap[effect];
+      
+      // Check if sound is enabled
+      if (!preferences.sounds[soundKey]?.enabled) {
+        return;
+      }
+
+      const masterVolume = preferences.masterVolume;
+
       switch (effect) {
         case 'windowOpen':
-          // Use actual MP3 sound file
           const windowAudio = new Audio(windowOpenSound);
-          windowAudio.volume = 0.4;
+          windowAudio.volume = 0.4 * masterVolume;
           windowAudio.play().catch(() => {});
           break;
         case 'windowClose':
-          // Use same sound as window open
           const closeAudio = new Audio(windowOpenSound);
-          closeAudio.volume = 0.4;
+          closeAudio.volume = 0.4 * masterVolume;
           closeAudio.play().catch(() => {});
           break;
         case 'buttonClick':
-          // Sharp click
-          createBeep(1000, 0.05, 0.15);
+          createBeep(1000, 0.05, 0.15 * masterVolume);
           break;
         case 'keyPress':
-          // Use actual MP3 sound file
           const audio = getKeyPressAudio();
+          audio.volume = 0.3 * masterVolume;
           audio.play().catch(() => {});
           break;
         case 'login':
-          // Use actual MP3 sound file
           const loginAudio = new Audio(loginSound);
-          loginAudio.volume = 0.5;
+          loginAudio.volume = 0.5 * masterVolume;
           loginAudio.play().catch(() => {});
           break;
       }
     } catch (error) {
-      // Silently fail if audio context is not available
       console.debug('Sound effect failed:', error);
     }
-  }, [getKeyPressAudio]);
+  }, [getKeyPressAudio, preferences]);
 
   return { playSound };
 };
