@@ -150,17 +150,17 @@ export default function StreakDisplay({ variant = 'full' }: StreakDisplayProps) 
 
   return (
     <div className="bg-white p-8 w-full h-full overflow-auto">
-      {/* Top section with logo and How it works */}
-      <div className="flex items-start gap-8 mb-8">
-        {/* Logomark */}
+      {/* Top section with logo and How it works - aligned with table columns */}
+      <div className="grid grid-cols-[2fr_2fr_3fr] gap-4 mb-8 items-start">
+        {/* Logomark in first column */}
         <img 
           src={logomark} 
           alt="Clear Cache" 
           className="w-32 h-32"
         />
         
-        {/* How it works section */}
-        <div className="flex-1">
+        {/* How it works section starting in Days column */}
+        <div className="col-span-2">
           <h2 className="font-chicago text-2xl mb-4">How it works</h2>
           <div className="space-y-2 font-sans text-base">
             <p>
