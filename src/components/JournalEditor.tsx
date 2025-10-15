@@ -113,8 +113,13 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
       });
       setTitle(dateString);
       lastSavedTitleRef.current = dateString;
+      
+      // Auto-focus the editor for new entries after animation
+      setTimeout(() => {
+        editor.focus();
+      }, 100);
     }
-  }, [entryId]);
+  }, [entryId, editor]);
 
   const loadEntry = async (id: string) => {
     try {
