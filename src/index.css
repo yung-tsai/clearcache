@@ -269,6 +269,16 @@
     list-style-position: outside;
   }
 
+  /* Nested ordered lists use letters */
+  .journal-editor ol ol {
+    list-style-type: lower-alpha; /* a, b, c, etc. */
+  }
+
+  /* Third level uses roman numerals */
+  .journal-editor ol ol ol {
+    list-style-type: lower-roman; /* i, ii, iii, etc. */
+  }
+
   .journal-editor li { margin: 0 0 0.25rem 0; }
 
   .journal-editor li > ul,
