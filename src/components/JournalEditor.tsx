@@ -303,8 +303,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
-              className="h-full font-sans focus-visible:outline-none bg-white p-0 [line-height:1.5] min-h-[400px]"
-              style={{ fontSize: '18px' }}
+              className="journal-editor h-full font-sans focus-visible:outline-none bg-white p-0 min-h-[400px]"
+              style={{ fontSize: '18px', lineHeight: 1.5 }}
               onKeyDown={() => {
                 playSound('keyPress');
               }}
@@ -425,25 +425,17 @@ export default function JournalEditor(props: JournalEditorProps) {
       console.error(error);
     },
     theme: {
-      paragraph: 'mb-2',
+      paragraph: '',
       heading: {
-        h1: 'text-2xl font-bold mb-2',
-        h2: 'text-xl font-bold mb-2',
-        h3: 'text-lg font-bold mb-2',
+        h1: 'text-2xl font-bold',
+        h2: 'text-xl font-bold',
+        h3: 'text-lg font-bold',
       },
       text: {
         bold: 'font-semibold',
         italic: 'italic',
         underline: 'underline',
         strikethrough: 'line-through',
-      },
-      list: {
-        ul: 'list-disc list-outside ml-6',
-        ol: 'list-decimal list-outside ml-6',
-        listitem: 'mb-1',
-        nested: {
-          list: 'ml-6'
-        },
       },
     },
     nodes: [
