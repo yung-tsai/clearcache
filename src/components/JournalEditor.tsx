@@ -18,7 +18,6 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import {
   TRANSFORMERS,
   $convertToMarkdownString,
@@ -87,7 +86,6 @@ function SpeechToTextPlugin({ transcript, onReset }: { transcript: string; onRes
 
   return null;
 }
-
 
 function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
@@ -274,11 +272,11 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
   };
 
   const handleChange = useCallback((editorState: any) => {
-    editorState.read(() => {
+    editor.update(() => {
       const markdown = $convertToMarkdownString(TRANSFORMERS);
       setCurrentMarkdown(markdown);
     });
-  }, []);
+  }, [editor]);
 
   return (
     <div className="h-full flex flex-col relative">
@@ -303,8 +301,8 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
-              className="journal-editor h-full font-sans focus-visible:outline-none bg-white p-0 min-h-[400px]"
-              style={{ fontSize: '18px', lineHeight: 1.5 }}
+              className="h-full font-sans focus-visible:outline-none bg-white p-0 [line-height:1.5] min-h-[400px]"
+              style={{ fontSize: '18px' }}
               onKeyDown={() => {
                 playSound('keyPress');
               }}
@@ -315,7 +313,6 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         />
         <HistoryPlugin />
         <ListPlugin />
-        <TabIndentationPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
         <SpeechToTextPlugin transcript={transcript} onReset={reset} />
@@ -425,17 +422,24 @@ export default function JournalEditor(props: JournalEditorProps) {
       console.error(error);
     },
     theme: {
-      paragraph: '',
+      paragraph: 'mb-2',
       heading: {
-        h1: 'text-2xl font-bold',
-        h2: 'text-xl font-bold',
-        h3: 'text-lg font-bold',
+        h1: 'text-2xl font-bold mb-2',
+        h2: 'text-xl font-bold mb-2',
+        h3: 'text-lg font-bold mb-2',
       },
       text: {
         bold: 'font-semibold',
         italic: 'italic',
         underline: 'underline',
         strikethrough: 'line-through',
+      },
+      list: {
+        ul: 'list-disc list-inside mb-2',
+        ol: 'list-decimal list-inside mb-2',
+        nested: {
+          listitem: 'ml-4',
+        },
       },
     },
     nodes: [

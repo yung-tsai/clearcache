@@ -249,33 +249,4 @@
   .scrollbar-autohide::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--mac-black));
   }
-
-  /* Journal Editor - Lexical default list styling */
-  .journal-editor p {
-    margin: 0 0 0.5rem 0;
-  }
-  
-  .journal-editor ul {
-    margin: 0 0 0.5rem 1.5rem;
-    padding-left: 1.25rem;
-    list-style-type: disc;
-    list-style-position: outside;
-  }
-  
-  .journal-editor ol {
-    margin: 0 0 0.5rem 1.5rem;
-    padding-left: 1.25rem;
-    list-style-type: decimal;
-    list-style-position: outside;
-  }
-  
-  .journal-editor li {
-    margin: 0 0 0.25rem 0;
-  }
-  
-  /* Ensure nested lists start on a new line with proper spacing */
-  .journal-editor li > ul,
-  .journal-editor li > ol {
-    margin-top: 0.25rem;
-  }
 }
