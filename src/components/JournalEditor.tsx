@@ -478,10 +478,11 @@ export default function JournalEditor(props: JournalEditorProps) {
         strikethrough: 'line-through',
       },
       list: {
-        ul: 'list-disc list-inside mb-2',
-        ol: 'list-decimal list-inside mb-2',
+        ul: 'list-disc list-outside mb-2 ml-5',
+        ol: 'list-decimal list-outside mb-2 ml-5',
+        listitem: 'mb-1',
         nested: {
-          listitem: 'ml-4',
+          listitem: 'ml-5',
         },
       },
     },
