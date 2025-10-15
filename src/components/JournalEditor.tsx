@@ -15,6 +15,7 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -313,6 +314,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         />
         <HistoryPlugin />
         <ListPlugin />
+        <TabIndentationPlugin />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
         <SpeechToTextPlugin transcript={transcript} onReset={reset} />
