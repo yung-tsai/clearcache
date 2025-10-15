@@ -24,8 +24,7 @@ import {
   $convertToMarkdownString,
   $convertFromMarkdownString,
 } from '@lexical/markdown';
-import { $getRoot, $createParagraphNode, $insertNodes, $createTextNode, COMMAND_PRIORITY_LOW, INDENT_CONTENT_COMMAND, OUTDENT_CONTENT_COMMAND } from 'lexical';
-import { $getListDepth, $isListItemNode, $isListNode } from '@lexical/list';
+import { $getRoot, $createParagraphNode, $insertNodes, $createTextNode } from 'lexical';
 
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode } from '@lexical/list';
@@ -89,44 +88,6 @@ function SpeechToTextPlugin({ transcript, onReset }: { transcript: string; onRes
   return null;
 }
 
-function ListMaxDepthPlugin({ maxDepth = 5 }: { maxDepth?: number }) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return editor.registerCommand(
-      INDENT_CONTENT_COMMAND,
-      () => {
-        return editor.getEditorState().read(() => {
-          const selection = editor._editorState._selection;
-          if (!selection) return false;
-
-          const nodes = selection.getNodes();
-          for (const node of nodes) {
-            if ($isListItemNode(node)) {
-              // Count depth by traversing parent nodes
-              let depth = 0;
-              let parent = node.getParent();
-              while (parent) {
-                if ($isListNode(parent)) {
-                  depth++;
-                }
-                parent = parent.getParent();
-              }
-              
-              if (depth >= maxDepth) {
-                return true; // Prevent indent at max depth
-              }
-            }
-          }
-          return false;
-        });
-      },
-      COMMAND_PRIORITY_LOW
-    );
-  }, [editor, maxDepth]);
-
-  return null;
-}
 
 function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
@@ -313,11 +274,11 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
   };
 
   const handleChange = useCallback((editorState: any) => {
-    editor.update(() => {
+    editorState.read(() => {
       const markdown = $convertToMarkdownString(TRANSFORMERS);
       setCurrentMarkdown(markdown);
     });
-  }, [editor]);
+  }, []);
 
   return (
     <div className="h-full flex flex-col relative">
@@ -355,7 +316,6 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
         <HistoryPlugin />
         <ListPlugin />
         <TabIndentationPlugin />
-        <ListMaxDepthPlugin maxDepth={5} />
         <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
         <SpeechToTextPlugin transcript={transcript} onReset={reset} />
