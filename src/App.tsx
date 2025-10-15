@@ -12,6 +12,7 @@ import Folder from "./pages/Folder";
 import Account from "./pages/Account";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import EditorTest from "./pages/EditorTest";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/app/folder" element={<Folder />} />
             <Route path="/app/account" element={<Account />} />
             <Route path="/app/admin" element={<Admin />} />
+            <Route path="/editor-test" element={<EditorTest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

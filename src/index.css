@@ -249,4 +249,33 @@
   .scrollbar-autohide::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--mac-black));
   }
+
+  /* Journal editor list styling to ensure visible, single markers */
+  .journal-editor p { margin: 0 0 0.5rem 0; }
+
+  .journal-editor ul {
+    margin: 0 0 0.5rem 0;
+    margin-left: 1.5rem;
+    padding-left: 0;
+    list-style-type: disc;
+    list-style-position: outside;
+  }
+
+  .journal-editor ol {
+    margin: 0 0 0.5rem 0;
+    margin-left: 1.5rem;
+    padding-left: 0;
+    list-style-type: decimal;
+    list-style-position: outside;
+  }
+
+  .journal-editor li { margin: 0 0 0.25rem 0; }
+
+  .journal-editor li > ul,
+  .journal-editor li > ol { margin-top: 0.25rem; }
+
+  /* Hide parent marker when it contains only a nested list to prevent "double bullets" */
+  .journal-editor li:has(> ul:only-child),
+  .journal-editor li:has(> ol:only-child) { list-style-type: none; }
 }
+
