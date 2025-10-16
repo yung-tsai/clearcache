@@ -121,7 +121,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
         <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
         <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
         
-        <div className="absolute inset-0 flex items-center px-4 pt-2 pb-2">
+        <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem' }}>
           {/* Left: Name */}
           <div className="text-left">
             <button
