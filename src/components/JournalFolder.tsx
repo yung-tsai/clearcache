@@ -118,7 +118,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
       {/* Infobar */}
       <div className="relative h-[28px] mx-[2px] bg-white">
         {/* Double line border at bottom */}
-        <div className="absolute bottom-[3px] left-0 right-0 h-[1px] bg-black" />
+        <div className="absolute bottom-[5px] left-0 right-0 h-[1px] bg-black" />
         <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
         
         <div className="absolute inset-0 flex items-center px-4 pt-1 pb-1">

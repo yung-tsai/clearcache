@@ -119,7 +119,7 @@ export function MacDesktop() {
         setWindows(prev => [...prev, {
           id: windowId,
           content: 'journal-folder',
-          title: 'Journal Folder',
+          title: 'Entries',
           zIndex: newZIndex,
           noPadding: true
         }]);

@@ -84,7 +84,7 @@ const defaultDockItems: DockItem[] = [
   {
     id: 'journal-folder',
     icon: journalFolderIcon,
-    name: 'Journal Folder',
+    name: 'Entries',
     action: 'journal-folder'
   },
   {
