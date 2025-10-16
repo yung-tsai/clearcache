@@ -130,65 +130,9 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   });
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Infobar */}
-      <div className="relative h-[28px] mx-[2px] bg-white">
-        {/* Double line border at bottom */}
-        <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
-        <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
-        
-        <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem', paddingLeft: '200px' }}>
-          {/* Left: Name */}
-          <div className="text-left">
-            <button
-              onClick={() => handleSort('name')}
-              className="hover:opacity-70 transition-opacity"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                fontSize: '14px',
-                fontWeight: 400,
-              }}
-            >
-              Name
-            </button>
-          </div>
-          
-          {/* Center: Word Count */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <button
-              onClick={() => handleSort('wordCount')}
-              className="hover:opacity-70 transition-opacity"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                fontSize: '14px',
-                fontWeight: 400,
-              }}
-            >
-              Word Count
-            </button>
-          </div>
-          
-          {/* Right: Last Modified */}
-          <div className="absolute right-4">
-            <button
-              onClick={() => handleSort('date')}
-              className="hover:opacity-70 transition-opacity"
-              style={{
-                fontFamily: 'Open Sans, sans-serif',
-                fontSize: '14px',
-                fontWeight: 400,
-              }}
-            >
-              Last Modified
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content: Sidebar + Entries List */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
-        <div className="w-[200px] bg-white border-r border-black flex flex-col">
+    <div className="flex h-full">
+      {/* Left Sidebar */}
+      <div className="w-[200px] bg-white border-r border-black flex flex-col">
           {/* Search Box */}
           <div className="p-4 border-b border-black">
             <input
@@ -255,6 +199,62 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               <div className="text-xs text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                 Coming soon
               </div>
+            </div>
+          </div>
+        </div>
+
+      {/* Right Side: Infobar + Main Content */}
+      <div className="flex flex-col flex-1">
+        {/* Infobar */}
+        <div className="relative h-[28px] mx-[2px] bg-white">
+          {/* Double line border at bottom */}
+          <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
+          <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
+          
+          <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem' }}>
+            {/* Left: Name */}
+            <div className="text-left">
+              <button
+                onClick={() => handleSort('name')}
+                className="hover:opacity-70 transition-opacity"
+                style={{
+                  fontFamily: 'Open Sans, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                }}
+              >
+                Name
+              </button>
+            </div>
+            
+            {/* Center: Word Count */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <button
+                onClick={() => handleSort('wordCount')}
+                className="hover:opacity-70 transition-opacity"
+                style={{
+                  fontFamily: 'Open Sans, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                }}
+              >
+                Word Count
+              </button>
+            </div>
+            
+            {/* Right: Last Modified */}
+            <div className="absolute right-4">
+              <button
+                onClick={() => handleSort('date')}
+                className="hover:opacity-70 transition-opacity"
+                style={{
+                  fontFamily: 'Open Sans, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                }}
+              >
+                Last Modified
+              </button>
             </div>
           </div>
         </div>
