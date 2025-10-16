@@ -14,7 +14,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
       <img 
         src={logomark} 
         alt="Clear Cache" 
-        style={{ width: '320px', height: 'auto' }}
+        style={{ width: '200px', height: 'auto' }}
       />
       
       <p
@@ -28,7 +28,8 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
           color: '#000',
         }}
       >
-        Would you like to write an entry today?
+        Welcome to Clear Cache<br />
+        Ready to clear your mind?
       </p>
       
       <div className="flex flex-row items-center" style={{ gap: '12px' }}>
