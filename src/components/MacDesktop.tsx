@@ -236,7 +236,13 @@ export function MacDesktop() {
   const renderWindowContent = (window: OpenWindow) => {
     switch (window.content) {
       case 'welcome':
-        return <WelcomeScreen onEnter={() => setShowWelcome(false)} />;
+        return <WelcomeScreen 
+          onEnter={() => setShowWelcome(false)} 
+          onOpenNewEntry={() => {
+            setShowWelcome(false);
+            handleMenuAction('new-entry');
+          }}
+        />;
       case 'new-entry':
         return <JournalEditor onEntryCreated={(entryId, title) => {
           handleEntryCreated(window.id, entryId, title);
@@ -284,7 +290,13 @@ export function MacDesktop() {
             zIndex={1000}
             hideControls={true}
           >
-            <WelcomeScreen onEnter={() => setShowWelcome(false)} />
+            <WelcomeScreen 
+              onEnter={() => setShowWelcome(false)} 
+              onOpenNewEntry={() => {
+                setShowWelcome(false);
+                handleMenuAction('new-entry');
+              }}
+            />
           </MacWindow>
         )}
 

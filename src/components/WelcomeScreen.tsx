@@ -1,42 +1,79 @@
 import { useState } from 'react';
-import clearCacheLogo from '@/assets/cc-logo-concept.png';
+import logomark from '@/assets/logomark.png';
 
 interface WelcomeScreenProps {
   onEnter: () => void;
+  onOpenNewEntry: () => void;
 }
 
-export function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
-  const [isPressed, setIsPressed] = useState(false);
+export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
+  const [pressedButton, setPressedButton] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8 gap-8">
+    <div className="flex flex-col items-center justify-center h-full p-8" style={{ gap: '20px' }}>
       <img 
-        src={clearCacheLogo} 
+        src={logomark} 
         alt="Clear Cache" 
         style={{ width: '320px', height: 'auto' }}
       />
       
-      <button
-        onClick={onEnter}
-        onMouseDown={() => setIsPressed(true)}
-        onMouseUp={() => setIsPressed(false)}
-        onMouseLeave={() => setIsPressed(false)}
-        className="flex flex-row justify-center items-center bg-white border border-black text-black transition-all"
+      <p
         style={{
-          padding: '15px',
-          gap: '10px',
-          width: '320px',
-          height: '56px',
-          boxShadow: isPressed ? 'none' : '2px 2px 0px #000000',
           fontFamily: 'ChicagoFLF',
           fontWeight: 500,
-          fontSize: '20px',
-          lineHeight: '26px',
+          fontSize: '30px',
+          lineHeight: '1.2',
           letterSpacing: '-0.004em',
+          textAlign: 'center',
+          color: '#000',
         }}
       >
-        Enter
-      </button>
+        Would you like to write an entry today?
+      </p>
+      
+      <div className="flex flex-row items-center" style={{ gap: '12px' }}>
+        <button
+          onClick={onEnter}
+          onMouseDown={() => setPressedButton('not-yet')}
+          onMouseUp={() => setPressedButton(null)}
+          onMouseLeave={() => setPressedButton(null)}
+          className="flex flex-row justify-center items-center bg-white border border-black text-black transition-all"
+          style={{
+            padding: '15px',
+            width: '154px',
+            height: '56px',
+            boxShadow: pressedButton === 'not-yet' ? 'none' : '2px 2px 0px #000000',
+            fontFamily: 'ChicagoFLF',
+            fontWeight: 500,
+            fontSize: '20px',
+            lineHeight: '26px',
+            letterSpacing: '-0.004em',
+          }}
+        >
+          Not Yet
+        </button>
+        
+        <button
+          onClick={onOpenNewEntry}
+          onMouseDown={() => setPressedButton('yes')}
+          onMouseUp={() => setPressedButton(null)}
+          onMouseLeave={() => setPressedButton(null)}
+          className="flex flex-row justify-center items-center bg-white border border-black text-black transition-all"
+          style={{
+            padding: '15px',
+            width: '154px',
+            height: '56px',
+            boxShadow: pressedButton === 'yes' ? 'none' : '2px 2px 0px #000000',
+            fontFamily: 'ChicagoFLF',
+            fontWeight: 500,
+            fontSize: '20px',
+            lineHeight: '26px',
+            letterSpacing: '-0.004em',
+          }}
+        >
+          Yes
+        </button>
+      </div>
     </div>
   );
 }
