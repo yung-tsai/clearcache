@@ -16,6 +16,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -107,20 +108,30 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
     return sortOrder === 'asc' ? comparison : -comparison;
   });
 
+  const filteredEntries = sortedEntries.filter(entry => {
+    const title = extractTitle(entry).toLowerCase();
+    return title.includes(searchQuery.toLowerCase());
+  });
+
   return (
     <div className="flex flex-col h-full">
       {/* Infobar */}
-      <div className="relative h-[29px] mx-[2px] bg-white">
+      <div className="relative h-[28px] mx-[2px] bg-white">
         {/* Double line border at bottom */}
         <div className="absolute bottom-[3px] left-0 right-0 h-[1px] bg-black" />
         <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
         
-        <div className="absolute inset-0 flex items-center px-4 pt-1">
+        <div className="absolute inset-0 flex items-center px-4 pt-1 pb-1">
           {/* Left: Name */}
           <div className="flex-1 text-left">
             <button
               onClick={() => handleSort('name')}
-              className="font-mono text-sm hover:opacity-70 transition-opacity"
+              className="hover:opacity-70 transition-opacity"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                fontSize: '14px',
+                fontWeight: 400,
+              }}
             >
               Name
             </button>
@@ -130,22 +141,47 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
           <div className="flex-1 text-left">
             <button
               onClick={() => handleSort('wordCount')}
-              className="font-mono text-sm hover:opacity-70 transition-opacity"
+              className="hover:opacity-70 transition-opacity"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                fontSize: '14px',
+                fontWeight: 400,
+              }}
             >
               Word Count
             </button>
           </div>
           
           {/* Right: Last Modified */}
-          <div className="flex-1 text-left">
+          <div className="flex-1 text-right">
             <button
               onClick={() => handleSort('date')}
-              className="font-mono text-sm hover:opacity-70 transition-opacity"
+              className="hover:opacity-70 transition-opacity"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                fontSize: '14px',
+                fontWeight: 400,
+              }}
             >
               Last Modified
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Search Box */}
+      <div className="px-4 py-3 bg-white">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search entry name"
+          className="w-[230px] h-8 px-3 border border-black bg-white focus:outline-none focus:ring-1 focus:ring-black"
+          style={{
+            fontFamily: 'Open Sans, sans-serif',
+            fontSize: '14px',
+          }}
+        />
       </div>
 
       {/* Entries List */}
@@ -154,15 +190,15 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
           <div className="text-center py-8">
             <div className="text-sm font-mono">Loading entries...</div>
           </div>
-        ) : sortedEntries.length === 0 ? (
+        ) : filteredEntries.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-sm font-mono text-muted-foreground">
-              No journal entries yet
+              {searchQuery ? 'No entries match your search' : 'No journal entries yet'}
             </div>
           </div>
         ) : (
           <div>
-            {sortedEntries.map((entry) => (
+            {filteredEntries.map((entry) => (
               <div
                 key={entry.id}
                 className="flex items-center px-4 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
@@ -174,21 +210,39 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
               >
                 {/* Name */}
                 <div className="flex-1 text-left">
-                  <span className="font-mono text-sm font-bold">
+                  <span 
+                    style={{
+                      fontFamily: 'Open Sans, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: 600,
+                    }}
+                  >
                     {extractTitle(entry)}
                   </span>
                 </div>
                 
                 {/* Word Count */}
                 <div className="flex-1 text-left">
-                  <span className="font-mono text-sm">
+                  <span 
+                    style={{
+                      fontFamily: 'Open Sans, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: 400,
+                    }}
+                  >
                     {getWordCount(entry.content)}
                   </span>
                 </div>
                 
                 {/* Last Modified */}
-                <div className="flex-1 text-left">
-                  <span className="font-mono text-sm">
+                <div className="flex-1 text-right">
+                  <span 
+                    style={{
+                      fontFamily: 'Open Sans, sans-serif',
+                      fontSize: '16px',
+                      fontWeight: 400,
+                    }}
+                  >
                     {formatDate(entry.updated_at)}
                   </span>
                 </div>
