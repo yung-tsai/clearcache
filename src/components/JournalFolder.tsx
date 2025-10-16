@@ -17,6 +17,8 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,7 +35,16 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
 
       if (error) throw error;
 
-      setEntries(data || []);
+      const loadedEntries = data || [];
+      setEntries(loadedEntries);
+      
+      // Extract unique years and set default selection
+      if (loadedEntries.length > 0) {
+        const years = loadedEntries.map(entry => new Date(entry.created_at).getFullYear());
+        const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
+        setAvailableYears(uniqueYears);
+        setSelectedYear(uniqueYears[0]); // Select most recent year by default
+      }
     } catch (error) {
       console.error('Error loading entries:', error);
       toast({
@@ -110,7 +121,12 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
 
   const filteredEntries = sortedEntries.filter(entry => {
     const title = extractTitle(entry).toLowerCase();
-    return title.includes(searchQuery.toLowerCase());
+    const matchesSearch = title.includes(searchQuery.toLowerCase());
+    
+    const matchesYear = selectedYear === null || 
+      new Date(entry.created_at).getFullYear() === selectedYear;
+    
+    return matchesSearch && matchesYear;
   });
 
   return (
@@ -169,87 +185,133 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
         </div>
       </div>
 
-      {/* Search Box */}
-      <div className="px-4 py-3 bg-white">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search entry name"
-          className="w-[230px] h-8 px-3 border border-black bg-white focus:outline-none focus:ring-1 focus:ring-black"
-          style={{
-            fontFamily: 'Open Sans, sans-serif',
-            fontSize: '14px',
-          }}
-        />
-      </div>
-
-      {/* Entries List */}
-      <div className="flex-1 overflow-auto">
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="text-sm font-mono">Loading entries...</div>
+      {/* Main Content: Sidebar + Entries List */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar */}
+        <div className="w-[200px] bg-white border-r border-black flex flex-col">
+          {/* Search Box */}
+          <div className="p-4 border-b border-black">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search entry name"
+              className="w-full h-8 px-3 border border-black bg-white focus:outline-none focus:ring-1 focus:ring-black"
+              style={{
+                fontFamily: 'Open Sans, sans-serif',
+                fontSize: '14px',
+              }}
+            />
           </div>
-        ) : filteredEntries.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-sm font-mono text-muted-foreground">
-              {searchQuery ? 'No entries match your search' : 'No journal entries yet'}
+
+          {/* Year Filter */}
+          <div className="flex-1 overflow-auto">
+            <div className="p-4">
+              <h3 className="text-sm font-semibold mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                Year
+              </h3>
+              <div className="space-y-1">
+                {availableYears.map(year => (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                      selectedYear === year 
+                        ? 'bg-black text-white' 
+                        : 'hover:bg-gray-100'
+                    }`}
+                    style={{
+                      fontFamily: 'Open Sans, sans-serif',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mood Filter Section (future feature) */}
+            <div className="p-4 border-t border-gray-200">
+              <h3 className="text-sm font-semibold mb-2 text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                Mood
+              </h3>
+              <div className="text-xs text-gray-400" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                Coming soon
+              </div>
             </div>
           </div>
-        ) : (
-          <div>
-            {filteredEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="relative flex items-center px-4 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
-                onClick={() => {
-                  if (onOpenEntry) {
-                    onOpenEntry(entry.id, extractTitle(entry));
-                  }
-                }}
-              >
-                {/* Name */}
-                <div className="text-left">
-                  <span 
-                    style={{
-                      fontFamily: 'Open Sans, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {extractTitle(entry)}
-                  </span>
-                </div>
-                
-                {/* Word Count */}
-                <div className="absolute left-1/2 -translate-x-1/2">
-                  <span 
-                    style={{
-                      fontFamily: 'Open Sans, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: 400,
-                    }}
-                  >
-                    {getWordCount(entry.content)}
-                  </span>
-                </div>
-                
-                {/* Last Modified */}
-                <div className="absolute right-4">
-                  <span 
-                    style={{
-                      fontFamily: 'Open Sans, sans-serif',
-                      fontSize: '16px',
-                      fontWeight: 400,
-                    }}
-                  >
-                    {formatDate(entry.updated_at)}
-                  </span>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="text-sm font-mono">Loading entries...</div>
+              </div>
+            ) : filteredEntries.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-sm font-mono text-muted-foreground">
+                  {searchQuery ? 'No entries match your search' : 'No journal entries yet'}
                 </div>
               </div>
-            ))}
+            ) : (
+              <div>
+                {filteredEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="relative flex items-center px-4 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
+                    onClick={() => {
+                      if (onOpenEntry) {
+                        onOpenEntry(entry.id, extractTitle(entry));
+                      }
+                    }}
+                  >
+                    {/* Name */}
+                    <div className="text-left">
+                      <span 
+                        style={{
+                          fontFamily: 'Open Sans, sans-serif',
+                          fontSize: '16px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {extractTitle(entry)}
+                      </span>
+                    </div>
+                    
+                    {/* Word Count */}
+                    <div className="absolute left-1/2 -translate-x-1/2">
+                      <span 
+                        style={{
+                          fontFamily: 'Open Sans, sans-serif',
+                          fontSize: '16px',
+                          fontWeight: 400,
+                        }}
+                      >
+                        {getWordCount(entry.content)}
+                      </span>
+                    </div>
+                    
+                    {/* Last Modified */}
+                    <div className="absolute right-4">
+                      <span 
+                        style={{
+                          fontFamily: 'Open Sans, sans-serif',
+                          fontSize: '16px',
+                          fontWeight: 400,
+                        }}
+                      >
+                        {formatDate(entry.updated_at)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
