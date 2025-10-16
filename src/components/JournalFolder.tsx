@@ -137,7 +137,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
         <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
         <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
         
-        <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem' }}>
+        <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem', paddingLeft: '200px' }}>
           {/* Left: Name */}
           <div className="text-left">
             <button
@@ -205,31 +205,47 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
           </div>
 
           {/* Year Filter */}
-          <div className="flex-1 overflow-auto">
-            <div className="p-4">
-              <h3 className="text-sm font-semibold mb-2" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+        <div className="flex-1 overflow-auto">
+          <div className="flex flex-col items-end py-[10px] px-0 gap-[6px]">
+            {/* Year Label */}
+            <div className="flex flex-row items-center w-[178px] h-[20px]">
+              <h3 
+                style={{
+                  fontFamily: 'ChicagoFLF',
+                  fontWeight: 500,
+                  fontSize: '16px',
+                  lineHeight: '20px',
+                  color: '#000000',
+                }}
+              >
                 Year
               </h3>
-              <div className="space-y-1">
-                {availableYears.map(year => (
-                  <button
-                    key={year}
-                    onClick={() => setSelectedYear(year)}
-                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                      selectedYear === year 
-                        ? 'bg-black text-white' 
-                        : 'hover:bg-gray-100'
-                    }`}
-                    style={{
-                      fontFamily: 'Open Sans, sans-serif',
-                      fontSize: '14px',
-                    }}
-                  >
-                    {year}
-                  </button>
-                ))}
-              </div>
             </div>
+            
+            {/* Year Buttons Container */}
+            <div className="flex flex-col items-start w-[178px]">
+              {availableYears.map(year => (
+                <button
+                  key={year}
+                  onClick={() => setSelectedYear(year)}
+                  className={`w-full text-left flex items-center transition-colors ${
+                    selectedYear === year ? 'bg-[#F1F1F1]' : 'hover:bg-gray-100'
+                  }`}
+                  style={{
+                    height: '28px',
+                    padding: '4px 8px',
+                    fontFamily: 'Open Sans',
+                    fontWeight: 400,
+                    fontSize: '15px',
+                    lineHeight: '20px',
+                    color: '#4C4C4C',
+                  }}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          </div>
             
             {/* Mood Filter Section (future feature) */}
             <div className="p-4 border-t border-gray-200">
