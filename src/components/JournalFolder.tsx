@@ -123,7 +123,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
         
         <div className="absolute inset-0 flex items-center px-4 pt-1 pb-1">
           {/* Left: Name */}
-          <div className="flex-1 text-left">
+          <div className="text-left">
             <button
               onClick={() => handleSort('name')}
               className="hover:opacity-70 transition-opacity"
@@ -138,7 +138,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
           </div>
           
           {/* Center: Word Count */}
-          <div className="flex-1 text-left">
+          <div className="absolute left-1/2 -translate-x-1/2">
             <button
               onClick={() => handleSort('wordCount')}
               className="hover:opacity-70 transition-opacity"
@@ -153,7 +153,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
           </div>
           
           {/* Right: Last Modified */}
-          <div className="flex-1 text-right">
+          <div className="absolute right-4">
             <button
               onClick={() => handleSort('date')}
               className="hover:opacity-70 transition-opacity"
@@ -201,7 +201,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
             {filteredEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center px-4 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
+                className="relative flex items-center px-4 py-2 cursor-pointer hover:bg-[#E8E8E8] transition-colors"
                 onClick={() => {
                   if (onOpenEntry) {
                     onOpenEntry(entry.id, extractTitle(entry));
@@ -209,7 +209,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 }}
               >
                 {/* Name */}
-                <div className="flex-1 text-left">
+                <div className="text-left">
                   <span 
                     style={{
                       fontFamily: 'Open Sans, sans-serif',
@@ -222,7 +222,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 </div>
                 
                 {/* Word Count */}
-                <div className="flex-1 text-left">
+                <div className="absolute left-1/2 -translate-x-1/2">
                   <span 
                     style={{
                       fontFamily: 'Open Sans, sans-serif',
@@ -235,7 +235,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 </div>
                 
                 {/* Last Modified */}
-                <div className="flex-1 text-right">
+                <div className="absolute right-4">
                   <span 
                     style={{
                       fontFamily: 'Open Sans, sans-serif',
