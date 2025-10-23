@@ -326,6 +326,9 @@ export function MacDesktop() {
         style={previewStyle || backgroundStyle}
       />
       
+      {/* CRT Scanlines Overlay */}
+      <div className="crt-scanlines" />
+      
       <MacMenuBar onMenuAction={handleMenuAction} />
       
       <div className="relative h-full pt-6">

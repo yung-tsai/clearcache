@@ -292,5 +292,38 @@
   /* Hide parent marker when it contains only a nested list to prevent "double bullets" */
   .journal-editor li:has(> ul:only-child),
   .journal-editor li:has(> ol:only-child) { list-style-type: none; }
+
+  /* CRT Scanline Effect - Classic Macintosh Display */
+  .crt-scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.05) 0px,
+      rgba(0, 0, 0, 0.05) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+  }
+
+  /* Subtle vignette for authentic CRT look */
+  .crt-scanlines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(0, 0, 0, 0.08) 100%
+    );
+  }
 }
 
