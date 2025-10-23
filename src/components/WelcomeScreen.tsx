@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import logomark from '@/assets/logomark.png';
+import logomark from '@/assets/logo-mark.png';
 
 interface WelcomeScreenProps {
   onEnter: () => void;
@@ -19,8 +19,8 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
       
       <p
         style={{
-          fontFamily: 'ChicagoFLF',
-          fontWeight: 500,
+          fontFamily: 'Trispace, sans-serif',
+          fontWeight: 600,
           fontSize: '30px',
           lineHeight: '1.2',
           letterSpacing: '-0.004em',
@@ -28,8 +28,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
           color: '#000',
         }}
       >
-        Welcome to Clear Cache<br />
-        Ready to clear your mind?
+        Welcome. Ready to clear your mind?
       </p>
       
       <div className="flex flex-row items-center" style={{ gap: '12px' }}>
@@ -44,7 +43,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
             width: '154px',
             height: '56px',
             boxShadow: pressedButton === 'not-yet' ? 'none' : '2px 2px 0px #000000',
-            fontFamily: 'ChicagoFLF',
+            fontFamily: 'Trispace, sans-serif',
             fontWeight: 500,
             fontSize: '20px',
             lineHeight: '26px',
@@ -65,7 +64,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
             width: '154px',
             height: '56px',
             boxShadow: pressedButton === 'yes' ? 'none' : '2px 2px 0px #000000',
-            fontFamily: 'ChicagoFLF',
+            fontFamily: 'Trispace, sans-serif',
             fontWeight: 500,
             fontSize: '20px',
             lineHeight: '26px',

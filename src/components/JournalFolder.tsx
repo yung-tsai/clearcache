@@ -155,7 +155,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
             <div className="flex flex-row items-center w-[178px] h-[20px]">
               <h3 
                 style={{
-                  fontFamily: 'ChicagoFLF',
+                  fontFamily: 'Trispace, sans-serif',
                   fontWeight: 500,
                   fontSize: '16px',
                   lineHeight: '20px',

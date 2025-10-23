@@ -61,7 +61,7 @@ export default {
         "mac-menubar": "hsl(var(--mac-menubar))",
       },
       fontFamily: {
-        'chicago': ['ChicagoFLF', 'monospace'],
+        'chicago': ['Trispace', 'sans-serif'],
         'sans': ['Open Sans', 'sans-serif'],
         'condensed': ['Open Sans Condensed', 'sans-serif'],
       },

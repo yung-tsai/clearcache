@@ -282,7 +282,7 @@ export function MacDesktop() {
         {/* Welcome Screen */}
         {showWelcome && (
           <MacWindow
-            title="WELCOME TO"
+            title="Clear Cache"
             initialX={window.innerWidth / 2 - 365}
             initialY={window.innerHeight / 2 - 215}
             initialWidth={730}

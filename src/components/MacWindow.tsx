@@ -245,7 +245,7 @@ export function MacWindow({
             style={{
               width: '230px',
               height: '26px',
-              fontFamily: 'ChicagoFLF, monospace',
+              fontFamily: 'Trispace, sans-serif',
               fontWeight: '500',
               fontSize: '20px',
               lineHeight: '26px',
