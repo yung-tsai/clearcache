@@ -9,8 +9,6 @@ import Login from "./pages/Login";
 import NewEntry from "./pages/NewEntry";
 import EditEntry from "./pages/EditEntry";
 import Folder from "./pages/Folder";
-import Account from "./pages/Account";
-import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,8 +26,6 @@ const App = () => (
             <Route path="/app/new" element={<NewEntry />} />
             <Route path="/app/entry/:id" element={<EditEntry />} />
             <Route path="/app/folder" element={<Folder />} />
-            <Route path="/app/account" element={<Account />} />
-            <Route path="/app/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
