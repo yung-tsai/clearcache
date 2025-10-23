@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 export function ScanlineSettings() {
   const { preferences, loading, toggleScanlines, setIntensity, setDensity, setCustomIntensity } = useScanlineSettings();
   const [previewingIntensity, setPreviewingIntensity] = useState<string | null>(null);
+  const [previewDensity, setPreviewDensity] = useState<number | null>(null);
 
   if (loading) {
     return <div className="p-4">Loading scanline settings...</div>;
@@ -15,23 +16,43 @@ export function ScanlineSettings() {
   const handlePreview = (intensity: string) => {
     setPreviewingIntensity(intensity);
     
-    // Apply temporary preview
+    // Apply the preview intensity temporarily
     const root = document.documentElement;
-    const previewValue = intensity === 'custom' 
-      ? preferences.customIntensity 
-      : INTENSITY_MAP[intensity as keyof typeof INTENSITY_MAP];
+    const intensityMap: { [key: string]: number } = {
+      'light': 0.03,
+      'medium': 0.08,
+      'heavy': 0.15,
+      'extra-heavy': 0.25,
+      'maximum': 0.4
+    };
     
-    root.style.setProperty('--scanline-intensity', previewValue.toString());
+    const value = intensityMap[intensity];
+    if (value !== undefined) {
+      root.style.setProperty('--scanline-intensity', value.toString());
+    }
     
-    // Revert after 2 seconds
+    // Reset after 2 seconds
     setTimeout(() => {
       setPreviewingIntensity(null);
-      // Revert to actual saved preferences
-      const savedValue = preferences.intensity === 'custom'
-        ? preferences.customIntensity
-        : INTENSITY_MAP[preferences.intensity];
-      root.style.setProperty('--scanline-intensity', savedValue.toString());
+      // Restore saved intensity
+      root.style.setProperty('--scanline-intensity', preferences.customIntensity.toString());
     }, 2000);
+  };
+
+  const handleDensityChange = (value: number[]) => {
+    const newDensity = value[0];
+    setPreviewDensity(newDensity);
+    
+    // Apply immediately for live preview
+    const root = document.documentElement;
+    root.style.setProperty('--scanline-density', `${newDensity}px`);
+  };
+
+  const handleDensityCommit = () => {
+    if (previewDensity !== null) {
+      setDensity(previewDensity);
+      setPreviewDensity(null);
+    }
   };
 
   const customIntensityPercent = Math.round(preferences.customIntensity * 100);
@@ -236,15 +257,16 @@ export function ScanlineSettings() {
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground">Dense</span>
                   <Slider
-                    value={[preferences.density]}
-                    onValueChange={(value) => setDensity(value[0])}
+                    value={[previewDensity ?? preferences.density]}
+                    onValueChange={handleDensityChange}
+                    onValueCommit={handleDensityCommit}
                     min={1}
                     max={4}
-                    step={1}
+                    step={0.5}
                     className="flex-1"
                   />
                   <span className="text-sm text-muted-foreground">Very Wide</span>
-                  <span className="text-sm w-8">{preferences.density}</span>
+                  <span className="text-sm w-8">{(previewDensity ?? preferences.density).toFixed(1)}</span>
                 </div>
               </td>
             </tr>
