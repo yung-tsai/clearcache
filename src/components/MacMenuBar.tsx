@@ -28,6 +28,8 @@ export function MacMenuBar({ onMenuAction }: MacMenuBarProps) {
       items: [
         { label: 'Calendar', action: 'journal-calendar', shortcut: '⌘2' },
         { label: 'Streaks', action: 'streaks', shortcut: '⌘3' },
+        { label: '---' },
+        { label: 'Scanlines...', action: 'scanlines', shortcut: '⌘L' },
       ]
     },
     {

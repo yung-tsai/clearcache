@@ -57,6 +57,11 @@
     --ring: var(--mac-black);
     --radius: 0rem;
 
+    /* Scanline settings */
+    --scanline-enabled: 1;
+    --scanline-intensity: 0.08;
+    --scanline-density: 2px;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -302,12 +307,13 @@
     height: 100%;
     pointer-events: none;
     z-index: 9999;
+    opacity: var(--scanline-enabled);
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.08) 0px,
-      rgba(0, 0, 0, 0.08) 1px,
+      rgba(0, 0, 0, var(--scanline-intensity)) 0px,
+      rgba(0, 0, 0, var(--scanline-intensity)) 1px,
       transparent 1px,
-      transparent 2px
+      transparent var(--scanline-density)
     );
   }
 

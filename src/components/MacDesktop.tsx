@@ -8,15 +8,17 @@ import JournalFolder from './JournalFolder';
 import JournalCalendar from './JournalCalendar';
 import StreakDisplay from './StreakDisplay';
 import { Settings } from './Settings';
+import { ScanlineSettings } from './ScanlineSettings';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useAuth } from '@/hooks/useAuth';
+import { useScanlineSettings, INTENSITY_MAP } from '@/hooks/useScanlineSettings';
 import { BackgroundPreference } from './BackgroundSelector';
 import swatchPattern from '@/assets/swatch-pattern.png';
 import dotsPattern from '@/assets/pattern-dots.png';
 import linesPattern from '@/assets/pattern-lines.png';
 import gridPattern from '@/assets/pattern-grid.png';
 
-export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'settings' | 'welcome';
+export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'settings' | 'scanlines' | 'welcome';
 
 interface OpenWindow {
   id: string;
@@ -40,6 +42,7 @@ const patternMap: Record<string, string> = {
 
 export function MacDesktop() {
   const { profile } = useAuth();
+  const { preferences: scanlinePrefs } = useScanlineSettings();
   const [windows, setWindows] = useState<OpenWindow[]>([]);
   const [nextZIndex, setNextZIndex] = useState(100);
   const [backgroundStyle, setBackgroundStyle] = useState<React.CSSProperties>({});
@@ -71,6 +74,19 @@ export function MacDesktop() {
       console.log('No background preference in profile, using default');
     }
   }, [profile]);
+
+  // Apply scanline preferences
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--scanline-enabled', scanlinePrefs.enabled ? '1' : '0');
+    
+    let intensity = scanlinePrefs.customIntensity;
+    if (scanlinePrefs.intensity !== 'custom') {
+      intensity = INTENSITY_MAP[scanlinePrefs.intensity];
+    }
+    root.style.setProperty('--scanline-intensity', intensity.toString());
+    root.style.setProperty('--scanline-density', `${scanlinePrefs.density}px`);
+  }, [scanlinePrefs]);
 
   // Listen for background changes
   useEffect(() => {
@@ -173,6 +189,14 @@ export function MacDesktop() {
           id: windowId,
           content: 'settings',
           title: 'Settings',
+          zIndex: newZIndex
+        }]);
+        break;
+      case 'scanlines':
+        setWindows(prev => [...prev, {
+          id: windowId,
+          content: 'scanlines',
+          title: 'Scanlines',
           zIndex: newZIndex
         }]);
         break;
@@ -313,6 +337,8 @@ export function MacDesktop() {
         return <StreakDisplay />;
       case 'settings':
         return <Settings />;
+      case 'scanlines':
+        return <ScanlineSettings />;
       default:
         return null;
     }

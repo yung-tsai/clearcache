@@ -3,10 +3,18 @@ export interface BackgroundPreference {
   value: string;
 }
 
+export interface ScanlinePreference {
+  enabled: boolean;
+  intensity: 'light' | 'medium' | 'heavy' | 'extra-heavy' | 'maximum' | 'custom';
+  density: number;
+  customIntensity: number;
+}
+
 export interface Profile {
   user_id: string;
   created_at: string;
   background_preference?: BackgroundPreference;
+  scanline_preferences?: ScanlinePreference;
 }
 
 export interface Entry {
