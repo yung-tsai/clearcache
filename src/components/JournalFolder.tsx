@@ -218,7 +218,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 onClick={() => handleSort('name')}
                 className="hover:opacity-70 transition-opacity"
                 style={{
-                  fontFamily: 'Open Sans, sans-serif',
+                  fontFamily: 'Trispace, sans-serif',
                   fontSize: '14px',
                   fontWeight: 400,
                 }}
@@ -233,7 +233,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 onClick={() => handleSort('wordCount')}
                 className="hover:opacity-70 transition-opacity"
                 style={{
-                  fontFamily: 'Open Sans, sans-serif',
+                  fontFamily: 'Trispace, sans-serif',
                   fontSize: '14px',
                   fontWeight: 400,
                 }}
@@ -248,7 +248,7 @@ export default function JournalFolder({ onOpenEntry }: JournalFolderProps) {
                 onClick={() => handleSort('date')}
                 className="hover:opacity-70 transition-opacity"
                 style={{
-                  fontFamily: 'Open Sans, sans-serif',
+                  fontFamily: 'Trispace, sans-serif',
                   fontSize: '14px',
                   fontWeight: 400,
                 }}

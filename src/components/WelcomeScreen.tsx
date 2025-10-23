@@ -14,7 +14,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
       <img 
         src={logomark} 
         alt="Clear Cache" 
-        style={{ width: '200px', height: 'auto' }}
+        style={{ width: '100px', height: 'auto' }}
       />
       
       <p
@@ -42,7 +42,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
             padding: '15px',
             width: '154px',
             height: '56px',
-            boxShadow: pressedButton === 'not-yet' ? 'none' : '2px 2px 0px #000000',
+            boxShadow: pressedButton === 'not-yet' ? 'none' : 'rgb(0, 0, 0) 3px 3px 0px',
             fontFamily: 'Trispace, sans-serif',
             fontWeight: 500,
             fontSize: '20px',
@@ -63,7 +63,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
             padding: '15px',
             width: '154px',
             height: '56px',
-            boxShadow: pressedButton === 'yes' ? 'none' : '2px 2px 0px #000000',
+            boxShadow: pressedButton === 'yes' ? 'none' : 'rgb(0, 0, 0) 3px 3px 0px',
             fontFamily: 'Trispace, sans-serif',
             fontWeight: 500,
             fontSize: '20px',

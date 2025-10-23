@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Entry } from '@/lib/database.types';
 import { Mic, MicOff, Trash2, Save } from 'lucide-react';
+import { format } from 'date-fns';
 import {
   LexicalComposer,
 } from '@lexical/react/LexicalComposer';
@@ -91,10 +92,11 @@ function SpeechToTextPlugin({ transcript, onReset }: { transcript: string; onRes
 function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState('Untitled');
   const [currentMarkdown, setCurrentMarkdown] = useState('');
+  const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
   const lastSavedContentRef = useRef<string>('');
-  const lastSavedTitleRef = useRef<string>('');
+  const lastSavedTitleRef = useRef<string>('Untitled');
   const { user } = useAuth();
   const { toast } = useToast();
   const { isSupported, isListening, transcript, start, stop, reset } = useSpeech();
@@ -105,15 +107,10 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
     if (entryId) {
       loadEntry(entryId);
     } else {
-      // Set default date for new entries
-      const today = new Date();
-      const dateString = today.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      setTitle(dateString);
-      lastSavedTitleRef.current = dateString;
+      // Set default for new entries
+      setTitle('Untitled');
+      setCreatedAt(new Date().toISOString());
+      lastSavedTitleRef.current = 'Untitled';
       
       // Auto-focus the editor for new entries after animation
       setTimeout(() => {
@@ -143,6 +140,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
       const entryTitle = data.title || 'Untitled';
       const content = data.content || '';
       setTitle(entryTitle);
+      setCreatedAt(data.created_at);
       setCurrentMarkdown(content);
       lastSavedContentRef.current = content;
       lastSavedTitleRef.current = entryTitle;
@@ -279,31 +277,83 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
     });
   }, [editor]);
 
+  const getWordCount = (content: string) => {
+    if (!content) return 0;
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    const text = div.textContent || div.innerText || '';
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length;
+  };
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'EEE, MMM d, yyyy');
+  };
+
   return (
     <div className="h-full flex flex-col relative">
       {/* Title Input */}
-      <div className="bg-white">
+      <div className="bg-white px-4 pt-4">
         <Input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={() => playSound('keyPress')}
-          placeholder="Title"
-          className="font-condensed font-semibold border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none p-0"
-          style={{ fontSize: '24px' }}
+          placeholder="Untitled"
+          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-white rounded-none p-0"
+          style={{ 
+            fontFamily: 'Trispace, sans-serif',
+            fontWeight: 600,
+            fontSize: '24px'
+          }}
         />
       </div>
 
-      {/* Spacing between title and editor */}
-      <div className="h-4 bg-white" />
+      {/* Info Bar */}
+      <div className="relative h-[28px] mx-[2px] bg-white">
+        {/* Double line border at bottom */}
+        <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
+        <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
+        
+        <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem' }}>
+          {/* Left: Created Date */}
+          <div className="text-left">
+            <span
+              style={{
+                fontFamily: 'Trispace, sans-serif',
+                fontSize: '14px',
+                fontWeight: 400,
+              }}
+            >
+              {formatDate(createdAt)}
+            </span>
+          </div>
+          
+          {/* Right: Word Count */}
+          <div className="absolute right-4">
+            <span
+              style={{
+                fontFamily: 'Trispace, sans-serif',
+                fontSize: '14px',
+                fontWeight: 400,
+              }}
+            >
+              Word Count: {getWordCount(currentMarkdown)}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Editor Area */}
-      <div className="flex-1 relative overflow-y-auto scrollbar-autohide mb-16">
+      <div className="flex-1 relative overflow-y-auto scrollbar-autohide mb-16 px-4">
         <RichTextPlugin
           contentEditable={
             <ContentEditable 
-              className="journal-editor h-full font-sans focus-visible:outline-none bg-white p-0 [line-height:1.5] min-h-[400px]"
-              style={{ fontSize: '18px' }}
+              className="journal-editor h-full focus-visible:outline-none bg-white p-0 [line-height:1.5] min-h-[400px]"
+              style={{ 
+                fontFamily: 'Space Mono, monospace',
+                fontSize: '16px'
+              }}
               onKeyDown={() => {
                 playSound('keyPress');
               }}
@@ -354,7 +404,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
               width: '62px',
               height: '36px',
               padding: '5px',
-              boxShadow: '2px 2px 0px #000000',
+              boxShadow: 'rgb(0, 0, 0) 3px 3px 0px',
               fontFamily: 'Trispace, sans-serif',
               fontSize: '20px',
               lineHeight: '26px',
@@ -365,10 +415,10 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
               e.currentTarget.style.boxShadow = 'none';
             }}
             onMouseUp={(e) => {
-              e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+              e.currentTarget.style.boxShadow = 'rgb(0, 0, 0) 3px 3px 0px';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+              e.currentTarget.style.boxShadow = 'rgb(0, 0, 0) 3px 3px 0px';
             }}
           >
             Delete
@@ -387,7 +437,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             width: '62px',
             height: '36px',
             padding: '5px',
-            boxShadow: '2px 2px 0px #000000',
+            boxShadow: 'rgb(0, 0, 0) 3px 3px 0px',
             fontFamily: 'Trispace, sans-serif',
             fontSize: '20px',
             lineHeight: '26px',
@@ -398,10 +448,10 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             e.currentTarget.style.boxShadow = 'none';
           }}
           onMouseUp={(e) => {
-            e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+            e.currentTarget.style.boxShadow = 'rgb(0, 0, 0) 3px 3px 0px';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
+            e.currentTarget.style.boxShadow = 'rgb(0, 0, 0) 3px 3px 0px';
           }}
         >
           Save
