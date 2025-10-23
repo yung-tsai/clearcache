@@ -42,6 +42,7 @@ interface JournalEditorProps {
   onDelete?: () => void;
   onEntryCreated?: (entryId: string, title: string) => void;
   onTitleUpdate?: (title: string) => void;
+  onInfoChange?: (info: { createdAt: string; wordCount: number }) => void;
 }
 
 function Placeholder() {
@@ -89,7 +90,7 @@ function SpeechToTextPlugin({ transcript, onReset }: { transcript: string; onRes
   return null;
 }
 
-function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: JournalEditorProps) {
+function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInfoChange }: JournalEditorProps) {
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<Entry | null>(null);
   const [title, setTitle] = useState('Untitled');
@@ -118,6 +119,16 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
       }, 100);
     }
   }, [entryId, editor]);
+
+  // Notify parent of info changes for the info bar
+  useEffect(() => {
+    if (onInfoChange) {
+      onInfoChange({
+        createdAt,
+        wordCount: getWordCount(currentMarkdown)
+      });
+    }
+  }, [createdAt, currentMarkdown, onInfoChange]);
 
   const loadEntry = async (id: string) => {
     try {
@@ -277,12 +288,23 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
     });
   }, [editor]);
 
-  const getWordCount = (content: string) => {
-    if (!content) return 0;
-    const div = document.createElement('div');
-    div.innerHTML = content;
-    const text = div.textContent || div.innerText || '';
-    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+  const getWordCount = (markdown: string) => {
+    if (!markdown) return 0;
+    
+    let text = markdown
+      .replace(/^#{1,6}\s+/gm, '')              // Remove headers
+      .replace(/(\*\*|__)(.*?)\1/g, '$2')      // Remove bold
+      .replace(/(\*|_)(.*?)\1/g, '$2')         // Remove italic
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links
+      .replace(/`([^`]+)`/g, '$1')             // Remove inline code
+      .replace(/```[\s\S]*?```/g, '')          // Remove code blocks
+      .replace(/^[\s]*[-*+]\s+/gm, '')         // Remove bullets
+      .replace(/^[\s]*\d+\.\s+/gm, '')         // Remove numbered lists
+      .replace(/^>\s+/gm, '')                  // Remove blockquotes
+      .replace(/^[-*_]{3,}\s*$/gm, '')         // Remove horizontal rules
+      .trim();
+    
+    const words = text.split(/\s+/).filter(word => word.length > 0);
     return words.length;
   };
 
@@ -307,41 +329,6 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate }: Jou
             fontSize: '24px'
           }}
         />
-      </div>
-
-      {/* Info Bar */}
-      <div className="relative h-[28px] mx-[2px] bg-white">
-        {/* Double line border at bottom */}
-        <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
-        <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
-        
-        <div className="absolute inset-0 flex items-center px-4 pb-2" style={{ paddingTop: '0.2rem' }}>
-          {/* Left: Created Date */}
-          <div className="text-left">
-            <span
-              style={{
-                fontFamily: 'Trispace, sans-serif',
-                fontSize: '14px',
-                fontWeight: 400,
-              }}
-            >
-              {formatDate(createdAt)}
-            </span>
-          </div>
-          
-          {/* Right: Word Count */}
-          <div className="absolute right-4">
-            <span
-              style={{
-                fontFamily: 'Trispace, sans-serif',
-                fontSize: '14px',
-                fontWeight: 400,
-              }}
-            >
-              Word Count: {getWordCount(currentMarkdown)}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Editor Area */}

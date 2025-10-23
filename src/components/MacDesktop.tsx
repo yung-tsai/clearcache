@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { MacMenuBar } from './MacMenuBar';
 import { MacWindow } from './MacWindow';
 import { DesktopIcons } from './DesktopIcons';
@@ -24,6 +25,10 @@ interface OpenWindow {
   entryId?: string;
   zIndex: number;
   noPadding?: boolean;
+  initialX?: number;
+  initialY?: number;
+  width?: number;
+  height?: number;
 }
 
 const patternMap: Record<string, string> = {
@@ -40,6 +45,21 @@ export function MacDesktop() {
   const [backgroundStyle, setBackgroundStyle] = useState<React.CSSProperties>({});
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [windowInfoBars, setWindowInfoBars] = useState<Record<string, { createdAt: string; wordCount: number }>>({});
+
+  // Helper to format dates for info bar
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    return format(new Date(dateString), 'EEE, MMM d, yyyy');
+  };
+
+  // Helper to calculate centered position with offset
+  const getCenteredPosition = (windowWidth: number, windowHeight: number, offset: number = 0) => {
+    return {
+      x: (window.innerWidth / 2) - (windowWidth / 2) + offset,
+      y: (window.innerHeight / 2) - (windowHeight / 2) + offset
+    };
+  };
 
   // Load and apply background preference
   useEffect(() => {
@@ -108,11 +128,19 @@ export function MacDesktop() {
     
     switch (action) {
       case 'new-entry':
+        const newEntryCount = windows.filter(w => w.content === 'new-entry' || w.content === 'edit-entry').length;
+        const offset = newEntryCount * 20; // 20px offset for each additional window
+        const centerPos = getCenteredPosition(800, 600, offset);
+        
         setWindows(prev => [...prev, {
           id: windowId,
           content: 'new-entry',
           title: 'New Entry',
-          zIndex: newZIndex
+          zIndex: newZIndex,
+          initialX: centerPos.x,
+          initialY: centerPos.y,
+          width: 800,
+          height: 600
         }]);
         break;
       case 'journal-folder':
@@ -158,7 +186,7 @@ export function MacDesktop() {
       // Update existing window with new entry and bring to front
       setWindows(prev => prev.map(w => 
         w.id === existingEditWindow.id 
-          ? { ...w, entryId, title: title || 'Edit Entry', zIndex: nextZIndex }
+          ? { ...w, entryId, title: title || 'Untitled', zIndex: nextZIndex }
           : w
       ));
       setNextZIndex(prev => prev + 1);
@@ -169,12 +197,20 @@ export function MacDesktop() {
     const newZIndex = nextZIndex;
     setNextZIndex(prev => prev + 1);
     
+    const editCount = windows.filter(w => w.content === 'edit-entry' || w.content === 'new-entry').length;
+    const offset = editCount * 20;
+    const centerPos = getCenteredPosition(800, 600, offset);
+    
     setWindows(prev => [...prev, {
       id: windowId,
       content: 'edit-entry',
-      title: title || 'Edit Entry',
+      title: title || 'Untitled',
       entryId,
-      zIndex: newZIndex
+      zIndex: newZIndex,
+      initialX: centerPos.x,
+      initialY: centerPos.y,
+      width: 800,
+      height: 600
     }]);
   };
 
@@ -211,7 +247,7 @@ export function MacDesktop() {
     // Update the window title when entry title changes
     setWindows(prev => prev.map(w => 
       w.id === windowId 
-        ? { ...w, title: title || 'Edit Entry' }
+        ? { ...w, title: title || 'Untitled' }
         : w
     ));
     // Refresh journal folder windows to show updated titles
@@ -244,9 +280,17 @@ export function MacDesktop() {
           }}
         />;
       case 'new-entry':
-        return <JournalEditor onEntryCreated={(entryId, title) => {
-          handleEntryCreated(window.id, entryId, title);
-        }} />;
+        return <JournalEditor 
+          onEntryCreated={(entryId, title) => {
+            handleEntryCreated(window.id, entryId, title);
+          }}
+          onInfoChange={(info) => {
+            setWindowInfoBars(prev => ({
+              ...prev,
+              [window.id]: info
+            }));
+          }}
+        />;
       case 'journal-folder':
         return <JournalFolder onOpenEntry={handleOpenEntry} />;
       case 'edit-entry':
@@ -254,10 +298,16 @@ export function MacDesktop() {
           entryId={window.entryId} 
           onDelete={() => handleEntryDeleted(window.id)}
           onTitleUpdate={(title) => handleTitleUpdate(window.id, title)}
+          onInfoChange={(info) => {
+            setWindowInfoBars(prev => ({
+              ...prev,
+              [window.id]: info
+            }));
+          }}
         />;
       case 'journal-calendar':
         return <JournalCalendar onOpenEntry={(entryId) => {
-          handleOpenEntry(entryId, 'Edit Entry');
+          handleOpenEntry(entryId, 'Untitled');
         }} />;
       case 'streaks':
         return <StreakDisplay />;
@@ -300,22 +350,30 @@ export function MacDesktop() {
           </MacWindow>
         )}
 
-        {windows.map((window, index) => (
-          <MacWindow
-            key={window.id}
-            title={window.title}
-            onClose={() => handleCloseWindow(window.id)}
-            onClick={() => bringWindowToFront(window.id)}
-            initialX={100 + (index * 30)}
-            initialY={100 + (index * 30)}
-            initialWidth={800}
-            initialHeight={600}
-            zIndex={window.zIndex}
-            noPadding={window.noPadding}
-          >
-            {renderWindowContent(window)}
-          </MacWindow>
-        ))}
+        {windows.map((window, index) => {
+          const windowInfo = windowInfoBars[window.id];
+          const showInfoBar = (window.content === 'new-entry' || window.content === 'edit-entry');
+          
+          return (
+            <MacWindow
+              key={window.id}
+              title={window.title}
+              onClose={() => handleCloseWindow(window.id)}
+              onClick={() => bringWindowToFront(window.id)}
+              initialX={window.initialX ?? (100 + (index * 30))}
+              initialY={window.initialY ?? (100 + (index * 30))}
+              initialWidth={window.width ?? 800}
+              initialHeight={window.height ?? 600}
+              zIndex={window.zIndex}
+              noPadding={window.noPadding}
+              showInfoBar={showInfoBar}
+              infoBarLeft={windowInfo ? formatDate(windowInfo.createdAt) : ''}
+              infoBarRight={windowInfo ? `Word Count: ${windowInfo.wordCount}` : 'Word Count: 0'}
+            >
+              {renderWindowContent(window)}
+            </MacWindow>
+          );
+        })}
         
         {/* Desktop Icons */}
         <DesktopIcons onIconAction={handleMenuAction} />

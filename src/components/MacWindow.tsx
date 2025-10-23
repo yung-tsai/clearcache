@@ -14,6 +14,9 @@ interface MacWindowProps {
   className?: string;
   noPadding?: boolean;
   hideControls?: boolean;
+  showInfoBar?: boolean;
+  infoBarLeft?: React.ReactNode;
+  infoBarRight?: React.ReactNode;
 }
 
 export function MacWindow({
@@ -28,7 +31,10 @@ export function MacWindow({
   zIndex = 10,
   className = "",
   noPadding = false,
-  hideControls = false
+  hideControls = false,
+  showInfoBar = false,
+  infoBarLeft,
+  infoBarRight
 }: MacWindowProps) {
   const [position, setPosition] = useState({ x: initialX, y: initialY });
   const [size, setSize] = useState({ width: initialWidth, height: initialHeight });
@@ -263,11 +269,26 @@ export function MacWindow({
         </div>
       </div>
 
+      {/* Info Bar - appears below title bar */}
+      {showInfoBar && (
+        <div 
+          className="flex justify-between items-center px-4 py-2 border-b-2 border-black bg-white"
+          style={{
+            fontFamily: 'Trispace, sans-serif',
+            fontSize: '14px',
+            fontWeight: 400,
+          }}
+        >
+          <div>{infoBarLeft}</div>
+          <div>{infoBarRight}</div>
+        </div>
+      )}
+
       {/* Content Area */}
       <div 
         style={{
           position: 'absolute',
-          top: '28px',
+          top: showInfoBar ? '68px' : '28px',
           left: '0px',
           right: '0px',
           bottom: '0px',
