@@ -88,6 +88,22 @@ export function MacDesktop() {
     root.style.setProperty('--scanline-density', `${scanlinePrefs.density}px`);
   }, [scanlinePrefs]);
 
+  // Listen for scanline changes from settings window
+  useEffect(() => {
+    const handleScanlineChange = (e: any) => {
+      const prefs = e.detail;
+      const root = document.documentElement;
+      root.style.setProperty('--scanline-enabled', prefs.enabled ? '1' : '0');
+      const intensity = prefs.intensity === 'custom'
+        ? prefs.customIntensity
+        : INTENSITY_MAP[prefs.intensity];
+      root.style.setProperty('--scanline-intensity', intensity.toString());
+      root.style.setProperty('--scanline-density', `${prefs.density}px`);
+    };
+    window.addEventListener('scanline-change', handleScanlineChange as any);
+    return () => window.removeEventListener('scanline-change', handleScanlineChange as any);
+  }, []);
+
   // Listen for background changes
   useEffect(() => {
     const handleBackgroundChange = (e: CustomEvent<BackgroundPreference>) => {

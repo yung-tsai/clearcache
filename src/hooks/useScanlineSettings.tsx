@@ -64,6 +64,9 @@ export const useScanlineSettings = () => {
     const updated = { ...preferences, ...newPreferences };
     setPreferences(updated);
 
+    // Broadcast change event
+    window.dispatchEvent(new CustomEvent('scanline-change', { detail: updated }));
+
     if (!user) return;
 
     const { error } = await supabase
