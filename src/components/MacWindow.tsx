@@ -269,26 +269,33 @@ export function MacWindow({
         </div>
       </div>
 
-      {/* Info Bar - appears below title bar */}
-      {showInfoBar && (
-        <div 
-          className="flex justify-between items-center px-4 py-2 border-b-2 border-black bg-white"
-          style={{
-            fontFamily: 'Trispace, sans-serif',
-            fontSize: '14px',
-            fontWeight: 400,
-          }}
-        >
-          <div>{infoBarLeft}</div>
-          <div>{infoBarRight}</div>
-        </div>
-      )}
+        {/* Info Bar - appears below title bar */}
+        {showInfoBar && (
+          <div className="relative h-[28px] mx-[2px] bg-white">
+            {/* Double line border at bottom */}
+            <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-black" />
+            <div className="absolute bottom-[1px] left-0 right-0 h-[1px] bg-black" />
+            
+            <div 
+              className="absolute inset-0 flex justify-between items-center px-4 pb-2" 
+              style={{ 
+                paddingTop: '0.2rem',
+                fontFamily: 'Trispace, sans-serif',
+                fontSize: '14px',
+                fontWeight: 400,
+              }}
+            >
+              <div>{infoBarLeft}</div>
+              <div>{infoBarRight}</div>
+            </div>
+          </div>
+        )}
 
       {/* Content Area */}
       <div 
         style={{
           position: 'absolute',
-          top: showInfoBar ? '68px' : '28px',
+          top: showInfoBar ? '56px' : '28px',
           left: '0px',
           right: '0px',
           bottom: '0px',
