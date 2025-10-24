@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import logomark from '@/assets/logo-mark.png';
+import logomark from '@/assets/logomark-2.png';
 
 interface WelcomeScreenProps {
   onEnter: () => void;
@@ -10,25 +10,26 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8" style={{ gap: '20px' }}>
+    <div className="flex flex-col items-center justify-center h-full p-8" style={{ gap: '20px', border: '4px solid #000', margin: '0' }}>
       <img 
         src={logomark} 
         alt="Clear Cache" 
-        style={{ width: '100px', height: 'auto' }}
+        style={{ width: '85px', height: 'auto' }}
       />
       
       <p
         style={{
           fontFamily: 'Trispace, sans-serif',
-          fontWeight: 600,
-          fontSize: '30px',
+          fontWeight: 500,
+          fontSize: '24px',
           lineHeight: '1.2',
           letterSpacing: '-0.004em',
           textAlign: 'center',
           color: '#000',
+          whiteSpace: 'pre-line'
         }}
       >
-        Welcome. Ready to clear your mind?
+        {'Hi there. Ready to clear\nyour mind?'}
       </p>
       
       <div className="flex flex-row items-center" style={{ gap: '12px' }}>
@@ -39,9 +40,9 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
           onMouseLeave={() => setPressedButton(null)}
           className="flex flex-row justify-center items-center bg-white border border-black text-black transition-all"
           style={{
-            padding: '15px',
-            width: '154px',
-            height: '56px',
+            padding: '10px 30px',
+            width: 'auto',
+            height: 'auto',
             boxShadow: pressedButton === 'not-yet' ? 'none' : 'rgb(0, 0, 0) 3px 3px 0px',
             fontFamily: 'Trispace, sans-serif',
             fontWeight: 500,
@@ -50,7 +51,7 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
             letterSpacing: '-0.004em',
           }}
         >
-          Not Yet
+          No
         </button>
         
         <button
@@ -60,9 +61,9 @@ export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
           onMouseLeave={() => setPressedButton(null)}
           className="flex flex-row justify-center items-center bg-white border border-black text-black transition-all"
           style={{
-            padding: '15px',
-            width: '154px',
-            height: '56px',
+            padding: '10px 30px',
+            width: 'auto',
+            height: 'auto',
             boxShadow: pressedButton === 'yes' ? 'none' : 'rgb(0, 0, 0) 3px 3px 0px',
             fontFamily: 'Trispace, sans-serif',
             fontWeight: 500,

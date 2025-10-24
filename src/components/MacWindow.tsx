@@ -14,6 +14,7 @@ interface MacWindowProps {
   className?: string;
   noPadding?: boolean;
   hideControls?: boolean;
+  hideTitleBar?: boolean;
   showInfoBar?: boolean;
   infoBarLeft?: React.ReactNode;
   infoBarRight?: React.ReactNode;
@@ -32,6 +33,7 @@ export function MacWindow({
   className = "",
   noPadding = false,
   hideControls = false,
+  hideTitleBar = false,
   showInfoBar = false,
   infoBarLeft,
   infoBarRight
@@ -147,127 +149,129 @@ export function MacWindow({
       }}
     >
       {/* Title Bar */}
-      <div
-        className="window-titlebar title-bar-draggable cursor-move relative"
-        onMouseDown={handleMouseDown}
-        style={{
-          width: '100%',
-          height: '28px',
-          background: '#FFFFFF',
-          border: '1px solid #000000',
-          borderRadius: '0px',
-          position: 'relative',
-          cursor: isMaximized ? 'default' : 'move'
-        }}
-      >
-        {/* Horizontal Bars */}
-        <div 
-          className="title-bar-draggable"
+      {!hideTitleBar && (
+        <div
+          className="window-titlebar title-bar-draggable cursor-move relative"
+          onMouseDown={handleMouseDown}
           style={{
-            position: 'absolute',
-            left: '4px',
-            right: '4px',
-            top: '6px',
-            height: '16px',
-            pointerEvents: 'none'
+            width: '100%',
+            height: '28px',
+            background: '#FFFFFF',
+            border: '1px solid #000000',
+            borderRadius: '0px',
+            position: 'relative',
+            cursor: isMaximized ? 'default' : 'move'
           }}
         >
-          {/* Individual bars at specific positions */}
-          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '0px', background: '#000000' }} />
-          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '3px', background: '#000000' }} />
-          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '6px', background: '#000000' }} />
-          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '9px', background: '#000000' }} />
-          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '12px', background: '#000000' }} />
-          <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '15px', background: '#000000' }} />
-        </div>
-
-        {/* Close Button */}
-        {!hideControls && onClose && (
-          <button
-            onClick={() => {
-              playSound('windowClose');
-              onClose();
-            }}
-            title="Close"
+          {/* Horizontal Bars */}
+          <div 
+            className="title-bar-draggable"
             style={{
               position: 'absolute',
-              width: '16px',
-              height: '16px',
-              left: '14px',
+              left: '4px',
+              right: '4px',
               top: '6px',
-              background: '#FFFFFF',
-              border: '1px solid #000000',
-              cursor: 'pointer'
+              height: '16px',
+              pointerEvents: 'none'
             }}
-          />
-        )}
+          >
+            {/* Individual bars at specific positions */}
+            <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '0px', background: '#000000' }} />
+            <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '3px', background: '#000000' }} />
+            <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '6px', background: '#000000' }} />
+            <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '9px', background: '#000000' }} />
+            <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '12px', background: '#000000' }} />
+            <div style={{ position: 'absolute', height: '1px', left: '0', right: '0', top: '15px', background: '#000000' }} />
+          </div>
 
-        {/* Expand/Maximize Button */}
-        {!hideControls && (
-          <button
-            onClick={handleMaximize}
-            title={isMaximized ? "Restore" : "Maximize"}
+          {/* Close Button */}
+          {!hideControls && onClose && (
+            <button
+              onClick={() => {
+                playSound('windowClose');
+                onClose();
+              }}
+              title="Close"
+              style={{
+                position: 'absolute',
+                width: '16px',
+                height: '16px',
+                left: '14px',
+                top: '6px',
+                background: '#FFFFFF',
+                border: '1px solid #000000',
+                cursor: 'pointer'
+              }}
+            />
+          )}
+
+          {/* Expand/Maximize Button */}
+          {!hideControls && (
+            <button
+              onClick={handleMaximize}
+              title={isMaximized ? "Restore" : "Maximize"}
+              style={{
+                position: 'absolute',
+                width: '16px',
+                height: '16px',
+                right: '13px',
+                top: '6px',
+                background: '#FFFFFF',
+                border: '1px solid #000000',
+                cursor: 'pointer'
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '10px',
+                  height: '10px',
+                  left: '0px',
+                  top: '0px',
+                  border: '1px solid #000000'
+                }}
+              />
+            </button>
+          )}
+          
+          {/* Title */}
+          <div 
+            className="title-bar-draggable"
             style={{
               position: 'absolute',
-              width: '16px',
-              height: '16px',
-              right: '13px',
-              top: '6px',
+              width: '246px',
+              height: '26px',
+              left: 'calc(50% - 246px/2)',
+              top: '0px',
               background: '#FFFFFF',
-              border: '1px solid #000000',
-              cursor: 'pointer'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0px 8px'
             }}
           >
             <div
               style={{
-                position: 'absolute',
-                width: '10px',
-                height: '10px',
-                left: '0px',
-                top: '0px',
-                border: '1px solid #000000'
+                width: '230px',
+                height: '26px',
+                fontFamily: 'Trispace, sans-serif',
+                fontWeight: '500',
+                fontSize: '20px',
+                lineHeight: '26px',
+                display: 'flex',
+                alignItems: 'center',
+                textAlign: 'center',
+                justifyContent: 'center',
+                letterSpacing: '-0.004em',
+                color: '#000000',
+                pointerEvents: 'none'
               }}
-            />
-          </button>
-        )}
-        
-        {/* Title */}
-        <div 
-          className="title-bar-draggable"
-          style={{
-            position: 'absolute',
-            width: '246px',
-            height: '26px',
-            left: 'calc(50% - 246px/2)',
-            top: '0px',
-            background: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0px 8px'
-          }}
-        >
-          <div
-            style={{
-              width: '230px',
-              height: '26px',
-              fontFamily: 'Trispace, sans-serif',
-              fontWeight: '500',
-              fontSize: '20px',
-              lineHeight: '26px',
-              display: 'flex',
-              alignItems: 'center',
-              textAlign: 'center',
-              justifyContent: 'center',
-              letterSpacing: '-0.004em',
-              color: '#000000',
-              pointerEvents: 'none'
-            }}
-          >
-            {title}
+            >
+              {title}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
         {/* Info Bar - appears below title bar */}
         {showInfoBar && (
@@ -295,7 +299,7 @@ export function MacWindow({
       <div 
         style={{
           position: 'absolute',
-          top: showInfoBar ? '56px' : '28px',
+          top: hideTitleBar ? '0px' : (showInfoBar ? '56px' : '28px'),
           left: '0px',
           right: '0px',
           bottom: '0px',

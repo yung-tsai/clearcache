@@ -383,7 +383,7 @@ export function MacDesktop() {
             initialWidth={730}
             initialHeight={430}
             zIndex={1000}
-            hideControls={true}
+            hideTitleBar={true}
           >
             <WelcomeScreen 
               onEnter={() => setShowWelcome(false)} 
