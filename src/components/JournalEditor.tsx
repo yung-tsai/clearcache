@@ -315,7 +315,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInf
   return (
     <div className="h-full flex flex-col relative">
       {/* Title Input */}
-      <div className="bg-white px-4 pt-4">
+      <div className="bg-white px-4 pt-0">
         <Input
           type="text"
           value={title}
