@@ -22,6 +22,9 @@ import bubblesPattern from '@/assets/pattern-bubbles.png';
 import starsPattern from '@/assets/pattern-stars.png';
 import catsPattern from '@/assets/pattern-cats.png';
 import bearPattern from '@/assets/pattern-bear.png';
+import plaidPattern from '@/assets/pattern-plaid.png';
+import cyanWavesPattern from '@/assets/pattern-cyan-waves.png';
+import purpleWavesPattern from '@/assets/pattern-purple-waves.png';
 
 export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'settings' | 'scanlines' | 'welcome';
 
@@ -48,6 +51,9 @@ const patternMap: Record<string, string> = {
   'stars': starsPattern,
   'cats': catsPattern,
   'bear': bearPattern,
+  'plaid': plaidPattern,
+  'cyan-waves': cyanWavesPattern,
+  'purple-waves': purpleWavesPattern,
 };
 
 export function MacDesktop() {

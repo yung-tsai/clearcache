@@ -11,6 +11,9 @@ import bubblesPattern from '@/assets/pattern-bubbles.png';
 import starsPattern from '@/assets/pattern-stars.png';
 import catsPattern from '@/assets/pattern-cats.png';
 import bearPattern from '@/assets/pattern-bear.png';
+import plaidPattern from '@/assets/pattern-plaid.png';
+import cyanWavesPattern from '@/assets/pattern-cyan-waves.png';
+import purpleWavesPattern from '@/assets/pattern-purple-waves.png';
 
 interface BackgroundSelectorProps {
   onClose: () => void;
@@ -31,6 +34,9 @@ const patterns = [
   { name: 'Stars', value: 'stars', image: starsPattern },
   { name: 'Cats', value: 'cats', image: catsPattern },
   { name: 'Bear', value: 'bear', image: bearPattern },
+  { name: 'Plaid', value: 'plaid', image: plaidPattern },
+  { name: 'Cyan Waves', value: 'cyan-waves', image: cyanWavesPattern },
+  { name: 'Purple Waves', value: 'purple-waves', image: purpleWavesPattern },
 ];
 
 const solidColors = [
