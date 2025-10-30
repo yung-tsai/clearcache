@@ -25,6 +25,12 @@ import bearPattern from '@/assets/pattern-bear.png';
 import plaidPattern from '@/assets/pattern-plaid.png';
 import cyanWavesPattern from '@/assets/pattern-cyan-waves.png';
 import purpleWavesPattern from '@/assets/pattern-purple-waves.png';
+import darkDotsPattern from '@/assets/pattern-dark-dots.png';
+import fineDotsPattern from '@/assets/pattern-fine-dots.png';
+import stripesPattern from '@/assets/pattern-stripes.png';
+import crosshatchPattern from '@/assets/pattern-crosshatch.png';
+import blueLinesPattern from '@/assets/pattern-blue-lines.png';
+import texturedDotsPattern from '@/assets/pattern-textured-dots.png';
 
 export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'settings' | 'scanlines' | 'welcome';
 
@@ -54,6 +60,12 @@ const patternMap: Record<string, string> = {
   'plaid': plaidPattern,
   'cyan-waves': cyanWavesPattern,
   'purple-waves': purpleWavesPattern,
+  'dark-dots': darkDotsPattern,
+  'fine-dots': fineDotsPattern,
+  'stripes': stripesPattern,
+  'crosshatch': crosshatchPattern,
+  'blue-lines': blueLinesPattern,
+  'textured-dots': texturedDotsPattern,
 };
 
 export function MacDesktop() {

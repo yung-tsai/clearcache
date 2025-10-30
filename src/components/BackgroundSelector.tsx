@@ -14,6 +14,12 @@ import bearPattern from '@/assets/pattern-bear.png';
 import plaidPattern from '@/assets/pattern-plaid.png';
 import cyanWavesPattern from '@/assets/pattern-cyan-waves.png';
 import purpleWavesPattern from '@/assets/pattern-purple-waves.png';
+import darkDotsPattern from '@/assets/pattern-dark-dots.png';
+import fineDotsPattern from '@/assets/pattern-fine-dots.png';
+import stripesPattern from '@/assets/pattern-stripes.png';
+import crosshatchPattern from '@/assets/pattern-crosshatch.png';
+import blueLinesPattern from '@/assets/pattern-blue-lines.png';
+import texturedDotsPattern from '@/assets/pattern-textured-dots.png';
 
 interface BackgroundSelectorProps {
   onClose: () => void;
@@ -37,6 +43,12 @@ const patterns = [
   { name: 'Plaid', value: 'plaid', image: plaidPattern },
   { name: 'Cyan Waves', value: 'cyan-waves', image: cyanWavesPattern },
   { name: 'Purple Waves', value: 'purple-waves', image: purpleWavesPattern },
+  { name: 'Dark Dots', value: 'dark-dots', image: darkDotsPattern },
+  { name: 'Fine Dots', value: 'fine-dots', image: fineDotsPattern },
+  { name: 'Stripes', value: 'stripes', image: stripesPattern },
+  { name: 'Crosshatch', value: 'crosshatch', image: crosshatchPattern },
+  { name: 'Blue Lines', value: 'blue-lines', image: blueLinesPattern },
+  { name: 'Textured Dots', value: 'textured-dots', image: texturedDotsPattern },
 ];
 
 const solidColors = [
@@ -97,7 +109,7 @@ export function BackgroundSelector({ onClose }: BackgroundSelectorProps) {
       {/* Patterns Section */}
       <div className="p-3">
         <div className="font-mono text-xs font-bold mb-2">Patterns</div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {patterns.map((pattern) => (
             <button
               key={pattern.value}
