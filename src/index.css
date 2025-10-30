@@ -256,7 +256,7 @@
   }
 
   /* Journal editor list styling to ensure visible, single markers */
-  .journal-editor p { margin: 0 0 0.5rem 0; }
+  .journal-editor p { margin: 0 0 1rem 0; }
 
   .journal-editor ul {
     margin: 0 0 0.5rem 0;
@@ -330,6 +330,20 @@
       transparent 0%,
       rgba(0, 0, 0, calc(0.08 * var(--scanline-enabled))) 100%
     );
+  }
+
+  /* Custom utility overrides */
+  .\[line-height\:1\.5\] {
+    line-height: 1.8;
+  }
+
+  .pt-4 {
+    padding-top: 1rem;
+  }
+
+  .px-4 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
 
