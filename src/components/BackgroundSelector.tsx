@@ -6,6 +6,11 @@ import swatchPattern from '@/assets/swatch-pattern.png';
 import dotsPattern from '@/assets/pattern-dots.png';
 import linesPattern from '@/assets/pattern-lines.png';
 import gridPattern from '@/assets/pattern-grid.png';
+import grayGridPattern from '@/assets/pattern-gray-grid.png';
+import bubblesPattern from '@/assets/pattern-bubbles.png';
+import starsPattern from '@/assets/pattern-stars.png';
+import catsPattern from '@/assets/pattern-cats.png';
+import bearPattern from '@/assets/pattern-bear.png';
 
 interface BackgroundSelectorProps {
   onClose: () => void;
@@ -21,6 +26,11 @@ const patterns = [
   { name: 'Dots', value: 'dots', image: dotsPattern },
   { name: 'Lines', value: 'lines', image: linesPattern },
   { name: 'Grid', value: 'grid', image: gridPattern },
+  { name: 'Gray Grid', value: 'gray-grid', image: grayGridPattern },
+  { name: 'Bubbles', value: 'bubbles', image: bubblesPattern },
+  { name: 'Stars', value: 'stars', image: starsPattern },
+  { name: 'Cats', value: 'cats', image: catsPattern },
+  { name: 'Bear', value: 'bear', image: bearPattern },
 ];
 
 const solidColors = [
@@ -81,7 +91,7 @@ export function BackgroundSelector({ onClose }: BackgroundSelectorProps) {
       {/* Patterns Section */}
       <div className="p-3">
         <div className="font-mono text-xs font-bold mb-2">Patterns</div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {patterns.map((pattern) => (
             <button
               key={pattern.value}
@@ -94,7 +104,7 @@ export function BackgroundSelector({ onClose }: BackgroundSelectorProps) {
                 className="w-12 h-12 border border-black/20 rounded mb-1"
                 style={{ 
                   backgroundImage: `url(${pattern.image})`,
-                  backgroundSize: '50%',
+                  backgroundSize: 'auto',
                   backgroundRepeat: 'repeat'
                 }}
               />

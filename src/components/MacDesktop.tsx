@@ -17,6 +17,11 @@ import swatchPattern from '@/assets/swatch-pattern.png';
 import dotsPattern from '@/assets/pattern-dots.png';
 import linesPattern from '@/assets/pattern-lines.png';
 import gridPattern from '@/assets/pattern-grid.png';
+import grayGridPattern from '@/assets/pattern-gray-grid.png';
+import bubblesPattern from '@/assets/pattern-bubbles.png';
+import starsPattern from '@/assets/pattern-stars.png';
+import catsPattern from '@/assets/pattern-cats.png';
+import bearPattern from '@/assets/pattern-bear.png';
 
 export type WindowContent = 'none' | 'new-entry' | 'journal-folder' | 'edit-entry' | 'journal-calendar' | 'streaks' | 'settings' | 'scanlines' | 'welcome';
 
@@ -38,6 +43,11 @@ const patternMap: Record<string, string> = {
   dots: dotsPattern,
   lines: linesPattern,
   grid: gridPattern,
+  'gray-grid': grayGridPattern,
+  'bubbles': bubblesPattern,
+  'stars': starsPattern,
+  'cats': catsPattern,
+  'bear': bearPattern,
 };
 
 export function MacDesktop() {
@@ -134,7 +144,7 @@ export function MacDesktop() {
       const patternImage = patternMap[pref.value];
       return {
         backgroundImage: `url(${patternImage})`,
-        backgroundSize: pref.value === 'swatch' ? 'auto' : '150px',
+        backgroundSize: 'auto',
         backgroundRepeat: 'repeat',
       };
     }
