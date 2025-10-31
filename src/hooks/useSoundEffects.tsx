@@ -1,11 +1,13 @@
 import { useRef, useCallback } from 'react';
-import keyPressSound from '@/assets/key-press.mp3';
-import loginSound from '@/assets/login-sound.mp3';
-import windowOpenSound from '@/assets/window-open.mp3';
+import keyPressSound from '@/assets/mech-keyboard-02-102918.mp3';
+import loginSound from '@/assets/startup-sound.mp3';
+import windowCloseSound from '@/assets/window-close.mp3';
+import notificationSound from '@/assets/notification.mp3';
+import newEntrySound from '@/assets/new-entry.mp3';
 import { useSoundSettings } from './useSoundSettings';
 
 // Sound effect types
-export type SoundEffect = 'windowOpen' | 'windowClose' | 'buttonClick' | 'keyPress' | 'login';
+export type SoundEffect = 'windowClose' | 'notification' | 'keyPress' | 'login' | 'newEntry';
 
 // Simple beep sounds using Web Audio API as placeholders
 // Users can replace these with actual sound files later
@@ -58,11 +60,11 @@ export const useSoundEffects = () => {
     try {
       // Map sound effects to preference keys
       const soundMap: Record<SoundEffect, keyof typeof preferences.sounds> = {
-        windowOpen: 'window',
-        windowClose: 'window',
+        windowClose: 'windowClose',
         keyPress: 'keyboard',
         login: 'login',
-        buttonClick: 'buttonClick',
+        notification: 'notification',
+        newEntry: 'newEntry',
       };
 
       const soundKey = soundMap[effect];
@@ -75,18 +77,15 @@ export const useSoundEffects = () => {
       const masterVolume = preferences.masterVolume;
 
       switch (effect) {
-        case 'windowOpen':
-          const windowAudio = new Audio(windowOpenSound);
-          windowAudio.volume = 0.4 * masterVolume;
-          windowAudio.play().catch(() => {});
-          break;
         case 'windowClose':
-          const closeAudio = new Audio(windowOpenSound);
+          const closeAudio = new Audio(windowCloseSound);
           closeAudio.volume = 0.4 * masterVolume;
           closeAudio.play().catch(() => {});
           break;
-        case 'buttonClick':
-          createBeep(1000, 0.05, 0.15 * masterVolume);
+        case 'notification':
+          const notificationAudio = new Audio(notificationSound);
+          notificationAudio.volume = 0.5 * masterVolume;
+          notificationAudio.play().catch(() => {});
           break;
         case 'keyPress':
           const audio = getKeyPressAudio();
@@ -97,6 +96,11 @@ export const useSoundEffects = () => {
           const loginAudio = new Audio(loginSound);
           loginAudio.volume = 0.5 * masterVolume;
           loginAudio.play().catch(() => {});
+          break;
+        case 'newEntry':
+          const newEntryAudio = new Audio(newEntrySound);
+          newEntryAudio.volume = 0.5 * masterVolume;
+          newEntryAudio.play().catch(() => {});
           break;
       }
     } catch (error) {

@@ -15,10 +15,11 @@ export function Settings() {
   }
 
   const soundSettings = [
-    { key: 'window' as const, label: 'Window Sounds', testSound: 'windowOpen' as const },
+    { key: 'windowClose' as const, label: 'Window Close', testSound: 'windowClose' as const },
     { key: 'keyboard' as const, label: 'Keyboard Sounds', testSound: 'keyPress' as const },
     { key: 'login' as const, label: 'Login Sound', testSound: 'login' as const },
-    { key: 'buttonClick' as const, label: 'Button Clicks', testSound: 'buttonClick' as const },
+    { key: 'notification' as const, label: 'Notifications', testSound: 'notification' as const },
+    { key: 'newEntry' as const, label: 'New Entry', testSound: 'newEntry' as const },
   ];
 
   return (

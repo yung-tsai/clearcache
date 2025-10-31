@@ -50,11 +50,6 @@ export function MacWindow({
   const windowRef = useRef<HTMLDivElement>(null);
   const { playSound } = useSoundEffects();
 
-  // Play window open sound on mount
-  useEffect(() => {
-    playSound('windowOpen');
-  }, [playSound]);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     // Only allow dragging when not maximized and when clicking on title bar areas
     if (!isMaximized && (e.target === e.currentTarget || (e.target as Element).classList.contains('window-titlebar') || (e.target as Element).classList.contains('title-bar-draggable'))) {

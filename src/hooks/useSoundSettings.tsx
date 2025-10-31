@@ -5,20 +5,22 @@ import { useAuth } from './useAuth';
 export interface SoundPreferences {
   masterVolume: number; // 0-1
   sounds: {
-    window: { enabled: boolean };
+    windowClose: { enabled: boolean };
     keyboard: { enabled: boolean };
     login: { enabled: boolean };
-    buttonClick: { enabled: boolean };
+    notification: { enabled: boolean };
+    newEntry: { enabled: boolean };
   };
 }
 
 const DEFAULT_PREFERENCES: SoundPreferences = {
   masterVolume: 0.5,
   sounds: {
-    window: { enabled: true },
+    windowClose: { enabled: true },
     keyboard: { enabled: true },
     login: { enabled: true },
-    buttonClick: { enabled: true },
+    notification: { enabled: true },
+    newEntry: { enabled: true },
   },
 };
 

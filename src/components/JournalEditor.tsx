@@ -198,6 +198,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInf
         
         onTitleUpdate?.(finalTitle);
         
+        playSound('notification');
         toast({
           title: 'Saved',
           description: 'Your entry has been saved.',
@@ -218,6 +219,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInf
         if (data) {
           console.log('New entry created:', data.id);
           onEntryCreated?.(data.id, finalTitle);
+          playSound('notification');
           toast({
             title: 'Entry Created',
             description: 'Your new entry has been saved.',
@@ -255,6 +257,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInf
 
       if (error) throw error;
 
+      playSound('notification');
       toast({
         title: 'Entry Deleted',
         description: 'Your journal entry has been deleted.',
@@ -381,10 +384,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInf
         {entryId && (
           <Button
             type="button"
-            onClick={() => {
-              playSound('buttonClick');
-              handleDelete();
-            }}
+            onClick={handleDelete}
             disabled={loading}
             className="border border-black bg-white text-black hover:bg-white active:shadow-none transition-none"
             style={{
@@ -414,10 +414,7 @@ function EditorContent({ entryId, onDelete, onEntryCreated, onTitleUpdate, onInf
         
         <Button
           type="button"
-          onClick={() => {
-            playSound('buttonClick');
-            saveEntry();
-          }}
+          onClick={saveEntry}
           disabled={loading}
           className="ml-auto border border-black bg-white text-black hover:bg-white active:shadow-none transition-none"
           style={{

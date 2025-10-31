@@ -12,6 +12,7 @@ import { ScanlineSettings } from './ScanlineSettings';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useAuth } from '@/hooks/useAuth';
 import { useScanlineSettings, INTENSITY_MAP } from '@/hooks/useScanlineSettings';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { BackgroundPreference } from './BackgroundSelector';
 import swatchPattern from '@/assets/swatch-pattern.png';
 import dotsPattern from '@/assets/pattern-dots.png';
@@ -77,6 +78,7 @@ export function MacDesktop() {
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties | null>(null);
   const [showWelcome, setShowWelcome] = useState(true);
   const [windowInfoBars, setWindowInfoBars] = useState<Record<string, { createdAt: string; wordCount: number }>>({});
+  const { playSound } = useSoundEffects();
 
   // Helper to format dates for info bar
   const formatDate = (dateString: string) => {
@@ -416,6 +418,7 @@ export function MacDesktop() {
             <WelcomeScreen 
               onEnter={() => setShowWelcome(false)} 
               onOpenNewEntry={() => {
+                playSound('newEntry');
                 setShowWelcome(false);
                 handleMenuAction('new-entry');
               }}
