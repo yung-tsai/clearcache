@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logomark from '@/assets/logomark-2.png';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface WelcomeScreenProps {
   onEnter: () => void;
@@ -8,6 +9,11 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({ onEnter, onOpenNewEntry }: WelcomeScreenProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
+  const { playSound } = useSoundEffects();
+
+  useEffect(() => {
+    playSound('login');
+  }, [playSound]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8" style={{ gap: '20px', border: '4px solid #000', margin: '0' }}>

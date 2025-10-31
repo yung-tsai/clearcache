@@ -17,7 +17,7 @@ const DEFAULT_PREFERENCES: SoundPreferences = {
   masterVolume: 0.5,
   sounds: {
     windowClose: { enabled: true },
-    keyboard: { enabled: true },
+    keyboard: { enabled: false },
     login: { enabled: true },
     notification: { enabled: true },
     newEntry: { enabled: true },

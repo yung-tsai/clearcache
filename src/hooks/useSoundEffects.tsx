@@ -106,7 +106,7 @@ export const useSoundEffects = () => {
     } catch (error) {
       console.debug('Sound effect failed:', error);
     }
-  }, [getKeyPressAudio, preferences]);
+  }, [getKeyPressAudio, preferences.masterVolume, preferences.sounds]);
 
   return { playSound };
 };
