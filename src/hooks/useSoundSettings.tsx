@@ -50,7 +50,29 @@ export const useSoundSettings = () => {
       }
 
       if (data?.sound_preferences) {
-        setPreferences(data.sound_preferences as SoundPreferences);
+        const prefs = data.sound_preferences as any;
+        
+        // Migrate old sound keys to new structure
+        const migratedSounds: SoundPreferences['sounds'] = {
+          windowClose: prefs.sounds?.windowClose ?? prefs.sounds?.window ?? { enabled: true },
+          keyboard: prefs.sounds?.keyboard ?? { enabled: false },
+          login: prefs.sounds?.login ?? { enabled: true },
+          notification: prefs.sounds?.notification ?? prefs.sounds?.buttonClick ?? { enabled: true },
+          newEntry: prefs.sounds?.newEntry ?? { enabled: true },
+        };
+
+        const migratedPreferences: SoundPreferences = {
+          masterVolume: prefs.masterVolume ?? 0.5,
+          sounds: migratedSounds,
+        };
+
+        setPreferences(migratedPreferences);
+
+        // Save migrated preferences back to database
+        await supabase
+          .from('profiles')
+          .update({ sound_preferences: migratedPreferences })
+          .eq('user_id', user.id);
       }
       setLoading(false);
     };
